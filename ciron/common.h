@@ -129,14 +129,6 @@ CironError CIRONAPI ciron_set_error(CironContext ctx, const char *file, int line
 void CIRONAPI ciron_bytes_to_hex(const unsigned char *bytes, int len, unsigned char *buf);
 
 
-/** I just love to have bzero available
- */
-#ifdef HAVE_BZERO
-void bzero(void *,size_t);
-#else
-#define bzero(ptr,n) memset((prt),0,(n))
-#endif
-
 
 /** The remainder of this header file defines utilities for
  * tracing and assertions thathave been used throughout development and

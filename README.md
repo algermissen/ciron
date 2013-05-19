@@ -3,7 +3,6 @@ ciron
 
 A C implementation of [iron](https://github.com/hueniverse/iron).
 
-
 Building ciron
 ==============
 

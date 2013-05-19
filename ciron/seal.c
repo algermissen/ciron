@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include <math.h>
 #include "ciron.h"
 #include "common.h"
