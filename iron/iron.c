@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 
 	int verbose = 0;
 	unsigned char *password = NULL;
-	int password_len;
+	int password_len = 0;
 
 	unsigned char *input;
 	int input_len = 1;

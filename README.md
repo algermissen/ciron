@@ -29,6 +29,7 @@ After the build, you should run the tests using
 
 ciron has been build and tested in the following environments:
 
+* Linux (CentOS)
 * MacOS 10.7
 
 
@@ -47,7 +48,7 @@ Encoding Issues
 ===============
 
 The library interprets all incoming data as byte sequences to stay clear of any encoding
-issues. If you are seeling strings, you have to provide them in UTF-8 encoded unsigned
+issues. If you are sealing strings, you have to provide them in UTF-8 encoded unsigned
 char arrays.
 
 
@@ -60,11 +61,11 @@ library.
 Please note that this is not yet a production-ready software, primarily because it has not yet been applied in
 a production-like testing environment.
 
-Specifically, there are the followiing open issues regarding security:
+Specifically, there are the following open issues regarding security:
 
-* libcrypto (the OpenSSL libary used) is not a trivial piece of software and it is also not documented very clearly. I would like to have at least one OpenSSL expert review my code.
+* libcrypto (the OpenSSL library used) is not a trivial piece of software and it is also not documented very clearly. I would like to have at least one OpenSSL expert review my code.
 * I am currently unclear whether I have to apply memory locking inside libciron to prevent the master password from being paged to disk. But
-please note that no copy of the incoming master password is made inside the libary. (Not sure about libcrypto though)
+please note that no copy of the incoming master password is made inside the library. (Not sure about libcrypto though)
 
 
 Underlying Crypto-Library
@@ -84,7 +85,12 @@ Implementation Concepts
 Some useful notes about the implementation approach:
 
 * None of the functions \0 terminate what they create.
-* No internal memory allocation is done inside libciron. (Not sure about the protions of libcrypto that I am using).
+* No internal memory allocation is done inside libciron. (Not sure about the portions of libcrypto that I am using).
+
+Until developer documentation for ciron is ready, please consult the `ciron/ciron.h` header file and the source code
+of the command line utility `iron/iron.c`. These should give you a good explanation as there are really only two 
+core functions: `seal()` and `unseal()`.
+
 
 The iron Command Line Utility
 ============================
