@@ -60,8 +60,9 @@ int test_unseal_ok2() {
 	Options integrity_options = DEFAULT_INTEGRITY_OPTIONS;
 	const unsigned char pwd[] = { 'x' , 'x' , 'x' };
 	const int pwd_len = 3;
+	int i;
 
-	const unsigned char expected[] = { 't','e','s','t' , '0'};
+	const unsigned char expected[] = { 't','e','s','t' , '\0'};
 	unsigned char *data =
 			(unsigned char *) "Fe26.1**9de0940934c1939a73369190e7be392941e1b92026fa504226e566dac83c021d*1tvXFomFhdK4gDksQLqMSw*olYIJnS16-Ce-GQyS6kS-w*790b9fd88300110fb1fc7d2ac8118754a74ebb267ca80483414c1957ed4d9b52*4jB5Ctqs5C5fwyUEA_wip8mmb5J06DuJnsIQCeh7iHI";
 	int data_len = 227;
