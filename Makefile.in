@@ -38,6 +38,8 @@ TESTOBJ=\
   test/test_crypto.o \
   test/test_keygen.o \
   test/test_encrypt.o \
+  test/test_seal.o \
+  test/test_calc.o \
 
 
 $(TEST): $(TO) $(LIB)
@@ -50,6 +52,8 @@ buildtest: $(LIB) $(TESTOBJ)
 	$(CC) $(CFLAGS) -Itest $(LIBOPT) -o test/test_crypto test/test_crypto.o $(LIB)
 	$(CC) $(CFLAGS) -Itest $(LIBOPT) -o test/test_keygen test/test_keygen.o $(LIB)
 	$(CC) $(CFLAGS) -Itest $(LIBOPT) -o test/test_encrypt test/test_encrypt.o $(LIB)
+	$(CC) $(CFLAGS) -Itest $(LIBOPT) -o test/test_seal test/test_seal.o $(LIB)
+	$(CC) $(CFLAGS) -Itest $(LIBOPT) -o test/test_calc test/test_calc.o $(LIB)
 
 
 test: buildtest
@@ -58,6 +62,8 @@ test: buildtest
 	test/test_crypto
 	test/test_keygen
 	test/test_encrypt
+	test/test_seal
+	test/test_calc
 
 
 cleantest:
@@ -66,6 +72,8 @@ cleantest:
 	rm -f test/test_crypto; rm -f test/test_crypto.o
 	rm -f test/test_keygen; rm -f test/test_keygen.o
 	rm -f test/test_encrypt; rm -f test/test_encrypt.o
+	rm -f test/test_seal; rm -f test/test_seal.o
+	rm -f test/test_calc; rm -f test/test_calc.o
 
 
 

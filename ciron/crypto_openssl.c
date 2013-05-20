@@ -23,13 +23,17 @@ CironError ciron_encrypt(CironContext context, Algorithm algorithm,
 	ciron_trace_bytes("IV", iv, 16);
 #endif
 
+	EVP_CIPHER_CTX_init(&ctx);
+
 	if (strcmp(algorithm->name, AES_128_CBC->name) == 0) {
 		if ((r = EVP_EncryptInit(&ctx, EVP_aes_128_cbc(), key, iv)) != 1) {
+			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to initialize encrypt cipher");
 		}
 	} else if (strcmp(algorithm->name, AES_256_CBC->name) == 0) {
 		if ((r = EVP_EncryptInit(&ctx, EVP_aes_256_cbc(), key, iv)) != 1) {
+			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to initialize encrypt cipher");
 		}
@@ -39,17 +43,19 @@ CironError ciron_encrypt(CironContext context, Algorithm algorithm,
 				"Algorithm %s not recognized for encryption", algorithm->name);
 	}
 	if ((r = EVP_EncryptUpdate(&ctx, buf, &n, data, data_len)) != 1) {
+		EVP_CIPHER_CTX_cleanup(&ctx);
 		return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 				CIRON_CRYPTO_ERROR, "Unable to encrypt");
 	}
 
 	if ((r = EVP_EncryptFinal(&ctx, buf + n, &n2)) != 1) {
+		EVP_CIPHER_CTX_cleanup(&ctx);
 		return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 				CIRON_CRYPTO_ERROR, "Unable to encrypt");
 	}
 
 	*sizep = n + n2;
-
+	EVP_CIPHER_CTX_cleanup(&ctx);
 	/* FIXME: any cleanup to do? Beware memory leak */
 	return CIRON_OK;
 }
@@ -67,13 +73,17 @@ CironError ciron_decrypt(CironContext context, Algorithm algorithm,
 	ciron_trace_bytes("DATA", data, data_len);
 #endif
 
+	EVP_CIPHER_CTX_init(&ctx);
+
 	if (strcmp(algorithm->name, AES_128_CBC->name) == 0) {
 		if ((r = EVP_DecryptInit(&ctx, EVP_aes_128_cbc(), key, iv)) != 1) {
+			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to initialize decrypt cipher");
 		}
 	} else if (strcmp(algorithm->name, AES_256_CBC->name) == 0) {
 		if ((r = EVP_DecryptInit(&ctx, EVP_aes_256_cbc(), key, iv)) != 1) {
+			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to initialize decrypt cipher");
 		}
@@ -83,15 +93,17 @@ CironError ciron_decrypt(CironContext context, Algorithm algorithm,
 				"Algorithm %s not recognized for decryption", algorithm->name);
 	}
 	if ((r = EVP_DecryptUpdate(&ctx, buf, &n, data, data_len)) != 1) {
+		EVP_CIPHER_CTX_cleanup(&ctx);
 		return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 				CIRON_CRYPTO_ERROR, "Unable to decrypt");
 	}
 
 	if ((r = EVP_DecryptFinal(&ctx, buf + n, &n2)) != 1) {
+		EVP_CIPHER_CTX_cleanup(&ctx);
 		return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 				CIRON_CRYPTO_ERROR, "Unable to decrypt");
 	}
-
+	EVP_CIPHER_CTX_cleanup(&ctx);
 	*sizep = n + n2;
 
 	/* FIXME: any cleanup to do? Beware memory leak */

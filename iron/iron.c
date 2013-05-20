@@ -137,6 +137,9 @@ int main(int argc, char **argv) {
 	}
 
 	if (mode == SEAL) {
+		/*
+		fprintf(stderr, "%s", password);
+		*/
 		if( (ciron_seal(&ctx,input, input_len, password, password_len,
 				encryption_options, integrity_options, encryption_buffer,
 				output_buffer, &output_len)) != CIRON_OK) {
@@ -145,6 +148,7 @@ int main(int argc, char **argv) {
 		}
 	} else {
 		CironError e;
+		fprintf(stderr, "(%s)", input);
 		if( (e =ciron_unseal(&ctx,input, input_len, password, password_len,
 				encryption_options, integrity_options, encryption_buffer,
 				output_buffer, &output_len)) != CIRON_OK) {

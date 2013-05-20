@@ -543,7 +543,7 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	 * is the last portion of the input anyhow.
 	 */
 	integrity_hmac_b64urlchars.chars = data_ptr;
-	integrity_hmac_b64urlchars.len = data_remain_len - 1; /* FIXME: why? */
+	integrity_hmac_b64urlchars.len = data_remain_len;
 	if (integrity_hmac_b64urlchars.len > 43) { /* FIXME: why is macro not working? */
 		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
 				CIRON_TOKEN_PARSE_ERROR,
@@ -580,7 +580,7 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	if (integrity_hmac_bytes.len != incodming_integrity_hmac_bytes.len) {
 		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
 				CIRON_TOKEN_VALIDATION_ERROR,
-				"HMAC signature invalid (lenght differ)");
+				"HMAC signature invalid (lengths differ)");
 	}
 
 	/*

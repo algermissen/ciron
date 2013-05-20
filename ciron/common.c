@@ -86,7 +86,7 @@ CironError ciron_get_error_code(CironContext ctx) {
 	return ctx->error;
 }
 
-/* Lookup table for base64 encoding/decoding */
+/* Lookup 'table' for hex encoding */
 static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 		'a', 'b', 'c', 'd', 'e', 'f' };
 void ciron_bytes_to_hex(const unsigned char *bytes, int len, unsigned char *buf) {
