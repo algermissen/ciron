@@ -48,7 +48,7 @@ static CironError parse_max_len(CironContext context, const unsigned char *data,
 
 int calculate_encryption_buffer_length(Options encryption_options, int data_len) {
 	/* for all CBC. But see https://github.com/algermissen/ciron/issues/5 */
-	int cipher_block_size = 16;
+	int cipher_block_size = 16; /* FIXME: at some point, make this dynamic */
 	/* Taken from http://www.obviex.com/articles/ciphertextsize.aspx */
 	return data_len + cipher_block_size - (data_len % cipher_block_size);
 }
@@ -66,20 +66,15 @@ int calculate_seal_buffer_length(Options encryption_options,
 	len++; /* delimiter */
 	len += 0; /* password id impl. pending */
 	len++; /* delimiter */
-	len = len + (NBYTES(encryption_options->salt_bits) * 2); /* enc salt (encr.options.salt_bits/8) * 2 (wegen hex) */
+	len = len + (NBYTES(encryption_options->salt_bits) * 2); /* Encryption salt (NBYTES * 2 due to hex encoding) */
 	len++; /* delimiter */
-	/* FIXME try macro for calc below */
-	len += ceil(
-			(double) (NBYTES(encryption_options->algorithm->iv_bits) * 4) / 3); /* iv (encr.options.iv_bits/8) und dann den base64  platz dafuer */
+	len += BASE64URL_ENCODE_SIZE(NBYTES(encryption_options->algorithm->iv_bits)); /* Base64url encoded IV */
 	len++; /* delimiter */
-	/* FIXME try macro for calc below */
-	len += ceil(
-			(double) (calculate_encryption_buffer_length(encryption_options,
-					data_len) * 4) / 3); /* base64 of encrypted */
+	len += BASE64URL_ENCODE_SIZE( calculate_encryption_buffer_length(encryption_options, data_len)); /* Base64url encoded encrypted data */
 	len++; /* delimiter */
-	len += NBYTES(integrity_options->salt_bits) * 2; /* integr. salt (integr.options.salt_bits/8) * 2 (wegen hex) */
+	len += NBYTES(integrity_options->salt_bits) * 2; /* Integrity salt (NBYTES * 2 due to hex encoding) */
 	len++; /* delimiter */
-	len += BASE64URL_ENCODE_SIZE(32); /* sha256 hmac result size as base 64*/
+	len += BASE64URL_ENCODE_SIZE(32); /* Base64url encoded HMAC (for HMAC SHA256 HMAC size is 32 bytes) FIXME: make dynamic for new algos */
 	return len;
 }
 
@@ -92,38 +87,23 @@ int calculate_unseal_buffer_length(Options encryption_options,
 	len--; /* delimiter */
 	len -= 0; /* password id impl. pending */
 	len--; /* delimiter */
-	len = len - (NBYTES(encryption_options->salt_bits) * 2); /* enc salt (encr.options.salt_bits/8) * 2 (wegen hex) */
+	len = len - (NBYTES(encryption_options->salt_bits) * 2); /* Encryption salt (NBYTES * 2 due to hex encoding) */
 	len--; /* delimiter */
-	len =
-			len
-					- ceil(
-							(double) (NBYTES(encryption_options->algorithm->iv_bits)
-									* 4) / 3); /* iv (encr.options.iv_bits/8) und dann den base64  platz dafuer */
+	len = len - BASE64URL_ENCODE_SIZE(NBYTES(encryption_options->algorithm->iv_bits)); /* Base64url encoded IV */
 	len--; /* delimiter */
-	/* skipping, because we need the remains of len below.
-	 len += ceil((double)(calculate_encryption_buffer_length(encryption_options,data_len) *4) / 3); * base64 of encrypted *
-	 */
+	/* We do not substract encryption size because this is what remains in the end and is the result */
 	len--; /* delimiter */
-	len = len - (NBYTES(integrity_options->salt_bits) * 2); /* integr. salt (integr.options.salt_bits/8) * 2 (wegen hex) */
+	len = len - (NBYTES(integrity_options->salt_bits) * 2); /* Integrity salt (NBYTES * 2 due to hex encoding) */
 	len--; /* delimiter */
-	len = len - ceil((double) (32 * 4) / 3); /* sha256 hmac result size as base 64*/
+	len = len - BASE64URL_ENCODE_SIZE(32); /* Base64url encoded HMAC (for HMAC SHA256 HMAC size is 32 bytes) FIXME: make dynamic for new algos */
 
 	/*
-	 * Now len is the length of the base64-encoded encrypted
+	 * Now len is the length of the base64-encoded encrypted and we want the non-base64 encoded size:
 	 */
+	len = BASE64URL_DECODE_SIZE(len);
 
-	len = floor((double) (len * 3) / 4);
-
-
-	/*
-	 * The result x would be calced by solving
-	 *   len = x+blocksize - (x%blocksize)
-	 * to x.
-	 *
-	 * No idea how to resolve the modulo term, hence I just return the encryption length since that is >= the original data length.
-	 *
-	 */
-	/* FIXME: make these functions return CironError */
+	/* FIXME: make these functions return CironError? */
+	/* Protect us against too small initial values. We cannot be less than 0 */
 	if (len < 0) {
 		len = 0;
 	}
@@ -544,7 +524,7 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	 */
 	integrity_hmac_b64urlchars.chars = data_ptr;
 	integrity_hmac_b64urlchars.len = data_remain_len;
-	if (integrity_hmac_b64urlchars.len > 43) { /* FIXME: why is macro not working? */
+	if (integrity_hmac_b64urlchars.len > 43) { /* FIXME: why is macro not working? Try it.*/
 		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
 				CIRON_TOKEN_PARSE_ERROR,
 				"Base64url encoded string of HMAC is too long. Parsed %d bytes, but max is %d",

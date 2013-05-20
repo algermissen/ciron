@@ -117,7 +117,7 @@ CironError ciron_generate_key(CironContext context,
 	int keylen;
 	int r;
 
-	keylen = ceil((double) algorithm->key_bits / 8);
+	keylen = NBYTES(algorithm->key_bits);
 	assert(keylen <= MAX_KEY_BYTES);
 
 	/*

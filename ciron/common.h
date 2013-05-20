@@ -77,13 +77,13 @@ extern "C" {
 /** A macro for calculated the maximal size of
  * a base64url encoding of a char array of length n.
  */
-#define BASE64URL_ENCODE_SIZE(n) ceil((double) ( (n) * 4) / 3)
+#define BASE64URL_ENCODE_SIZE(n) (ceil( (double)( (n) * 4) / 3))
 
 /** A macro for calculated the maximal size of
  * a decoding of a base64url encoded char array
  * of length n.
  */
-#define BASE64URL_DECODE_SIZE(n) ceil((double) ( (n) * 3) / 4)
+#define BASE64URL_DECODE_SIZE(n) (floor((double) ( (n) * 3) / 4))
 
 
 /** Structure for the Algorithm typedef in ciron.h

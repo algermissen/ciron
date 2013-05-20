@@ -148,7 +148,9 @@ int main(int argc, char **argv) {
 		}
 	} else {
 		CironError e;
+		/*
 		fprintf(stderr, "(%s)", input);
+		*/
 		if( (e =ciron_unseal(&ctx,input, input_len, password, password_len,
 				encryption_options, integrity_options, encryption_buffer,
 				output_buffer, &output_len)) != CIRON_OK) {
