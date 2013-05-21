@@ -15,6 +15,11 @@ typedef enum mode {
 void usage(void);
 void help(void);
 
+/*
+ * A note on memory allocation: For improved code clarity, we do not
+ * free up any allocated memory before exiting, although it would
+ * be good practice to do so.
+ */
 int main(int argc, char **argv) {
 
 	int verbose = 0;
@@ -86,12 +91,9 @@ int main(int argc, char **argv) {
 	/* Read all input at once */
 	input[0] = '\0';
 	while (fgets((char *)buffer, sizeof(buffer), stdin)) {
-		unsigned char *old = input;
 		input_len += strlen((char*)buffer);
 		if ((input = realloc(input, input_len)) == NULL ) {
 			perror("Failed to reallocate input buffer");
-			free(old);
-			free(password);
 			exit(4);
 		}
 		strcat((char*)input, (char*)buffer);
@@ -99,13 +101,18 @@ int main(int argc, char **argv) {
 	if(verbose) {
 		fprintf(stderr,"Read %d bytes of input\n", input_len);
 	}
+	/* Input len includes the \0 and we do not want to seal that */
+	input_len--;
 
-
+	/*
+	 * seal() and unseal() require the caller to allocate a buffer for storing the
+	 * binary encryption data, before it is base64url encoded into the result
+	 * string. ciron provides a function to calculate the buffer size from the
+	 * input data size.
+	 */
 	encryption_buffer_len = calculate_encryption_buffer_length(encryption_options, input_len);
 	if( (encryption_buffer = malloc(encryption_buffer_len)) == NULL) {
 		perror("Unable to allocate encryption buffer");
-		free(password);
-		free(input);
 		exit(5);
 	}
 
@@ -114,10 +121,16 @@ int main(int argc, char **argv) {
 	}
 
 
-	/* Below we add 1 byte because we want to \0-terminate the buffer */
+	/*
+	 * seal() and unseal() require the caller to allocate a buffer for storing the
+	 * result. ciron provides a function to calculate the buffer size from the
+	 * input data size.
+	 */
 	if (mode == SEAL) {
+		/* We add 1 byte because we want to \0-terminate the buffer */
 		output_buffer_len = calculate_seal_buffer_length(encryption_options, integrity_options, input_len) + 1;
 	} else {
+		/* We add 1 byte because we want to \0-terminate the buffer */
 		output_buffer_len = calculate_unseal_buffer_length(encryption_options, integrity_options, input_len) + 1;
 	}
 	if(verbose) {
@@ -126,9 +139,6 @@ int main(int argc, char **argv) {
 
 	if( (output_buffer = malloc(output_buffer_len)) == NULL) {
 		perror("Unable to allocate output buffer");
-		free(password);
-		free(input);
-		free(encryption_buffer);
 		exit(6);
 	}
 

@@ -565,7 +565,7 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 
 	/*
 	 * And check for HMAC equality. If this succeeds, we know that no one has tampered
-	 * with the * input.
+	 * with the input.
 	 */
 	if (memcmp(incodming_integrity_hmac_bytes.chars, integrity_hmac_bytes.chars,
 			integrity_hmac_bytes.len) != 0) {

@@ -53,10 +53,9 @@ CironError ciron_encrypt(CironContext context, Algorithm algorithm,
 		return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 				CIRON_CRYPTO_ERROR, "Unable to encrypt");
 	}
+	EVP_CIPHER_CTX_cleanup(&ctx);
 
 	*sizep = n + n2;
-	EVP_CIPHER_CTX_cleanup(&ctx);
-	/* FIXME: any cleanup to do? Beware memory leak */
 	return CIRON_OK;
 }
 
@@ -106,7 +105,6 @@ CironError ciron_decrypt(CironContext context, Algorithm algorithm,
 	EVP_CIPHER_CTX_cleanup(&ctx);
 	*sizep = n + n2;
 
-	/* FIXME: any cleanup to do? Beware memory leak */
 	return CIRON_OK;
 }
 
