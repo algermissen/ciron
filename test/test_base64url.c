@@ -22,7 +22,7 @@
 
  BASE64("foobar") = "Zm9vYmFy"
  */
-int test_ciron_base64url_encode() {
+int test_base64url_encodes_correctly() {
 
 	unsigned char chars[256];
 	int len;
@@ -79,7 +79,7 @@ int test_ciron_base64url_encode() {
 
  BASE64("foobar") = "Zm9vYmFy"
  */
-int test_ciron_base64url_decode() {
+int test_base64url_decodes_correctly() {
 
 	unsigned char bytes[256];
 	int len;
@@ -130,8 +130,8 @@ int test_ciron_base64url_decode() {
 
 int main(int argc, char **argv) {
 
-	RUNTEST(argv[0], test_ciron_base64url_encode);
-	RUNTEST(argv[0], test_ciron_base64url_decode);
+	RUNTEST(argv[0], test_base64url_encodes_correctly);
+	RUNTEST(argv[0], test_base64url_decodes_correctly);
 
 	return 0;
 }

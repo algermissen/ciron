@@ -101,7 +101,22 @@ The iron utility can be used to seal and unseal data on the command line.
     
     $ cat token | iron -p some_password -u
 
-This is useful for cross-language test cases and debugging.
+
+This is useful for cross-language test cases and debugging or for manually generating
+encapsulated tokens.
+
+While ciron is intended to be used for relatively small amounts of data, such
+as authentcation and authorization tokens, the library can be used for
+processing larger amounts of data. You can try this using the test data supplied
+in `test/data`. For example
+
+    $ cat test/data/grandinquisitor.txt | iron -p some_pwd > token
+
+    $ cat token | iron -p some_pwd -u
+
+
+
+
 
 
 

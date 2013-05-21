@@ -15,7 +15,7 @@ const int PASSWORD_LEN = 8;
 
 struct CironContext ctx;
 
-int test_encrypt_1() {
+int test_encrypt_decrypt() {
 
 	const unsigned char data[] = { 0x44, 0x45, 0x46, 0x47, 0x48 };
 	const int data_len = 5;
@@ -53,7 +53,7 @@ int test_encrypt_1() {
  * http://tools.ietf.org/html/rfc6070
  */
 int main(int argc, char **argv) {
-	RUNTEST(argv[0],test_encrypt_1);
+	RUNTEST(argv[0],test_encrypt_decrypt);
 	return 0;
 }
 
