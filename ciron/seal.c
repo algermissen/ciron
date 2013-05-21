@@ -87,15 +87,15 @@ int calculate_unseal_buffer_length(Options encryption_options,
 	len--; /* delimiter */
 	len -= 0; /* password id impl. pending */
 	len--; /* delimiter */
-	len = len - (NBYTES(encryption_options->salt_bits) * 2); /* Encryption salt (NBYTES * 2 due to hex encoding) */
+	len -= (NBYTES(encryption_options->salt_bits) * 2); /* Encryption salt (NBYTES * 2 due to hex encoding) */
 	len--; /* delimiter */
-	len = len - BASE64URL_ENCODE_SIZE(NBYTES(encryption_options->algorithm->iv_bits)); /* Base64url encoded IV */
+	len -= BASE64URL_ENCODE_SIZE(NBYTES(encryption_options->algorithm->iv_bits)); /* Base64url encoded IV */
 	len--; /* delimiter */
 	/* We do not substract encryption size because this is what remains in the end and is the result */
 	len--; /* delimiter */
-	len = len - (NBYTES(integrity_options->salt_bits) * 2); /* Integrity salt (NBYTES * 2 due to hex encoding) */
+	len -= (NBYTES(integrity_options->salt_bits) * 2); /* Integrity salt (NBYTES * 2 due to hex encoding) */
 	len--; /* delimiter */
-	len = len - BASE64URL_ENCODE_SIZE(32); /* Base64url encoded HMAC (for HMAC SHA256 HMAC size is 32 bytes) FIXME: make dynamic for new algos */
+	len -= BASE64URL_ENCODE_SIZE(32); /* Base64url encoded HMAC (for HMAC SHA256 HMAC size is 32 bytes) FIXME: make dynamic for new algos */
 
 	/*
 	 * Now len is the length of the base64-encoded encrypted and we want the non-base64 encoded size:
@@ -105,7 +105,7 @@ int calculate_unseal_buffer_length(Options encryption_options,
 	/* FIXME: make these functions return CironError? */
 	/* Protect us against too small initial values. We cannot be less than 0 */
 	if (len < 0) {
-		len = 0;
+		return 0;	
 	}
 	return len;
 }
