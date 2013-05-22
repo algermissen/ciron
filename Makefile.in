@@ -34,6 +34,7 @@ $(IRON): $(OBJS) $(LIB)
 
 TESTOBJ=\
   test/test_byte_to_hex.o \
+  test/test_fixed_time_equal.o \
   test/test_base64url.o \
   test/test_crypto.o \
   test/test_keygen.o \
@@ -48,6 +49,7 @@ $(TEST): $(TO) $(LIB)
 
 buildtest: $(LIB) $(TESTOBJ)
 	$(CC) $(CFLAGS) -Itest $(LIBOPT) -o test/test_byte_to_hex test/test_byte_to_hex.o $(LIB)
+	$(CC) $(CFLAGS) -Itest $(LIBOPT) -o test/test_fixed_time_equal test/test_fixed_time_equal.o $(LIB)
 	$(CC) $(CFLAGS) -Itest $(LIBOPT) -o test/test_base64url test/test_base64url.o $(LIB)
 	$(CC) $(CFLAGS) -Itest $(LIBOPT) -o test/test_crypto test/test_crypto.o $(LIB)
 	$(CC) $(CFLAGS) -Itest $(LIBOPT) -o test/test_keygen test/test_keygen.o $(LIB)
@@ -58,6 +60,7 @@ buildtest: $(LIB) $(TESTOBJ)
 
 test: buildtest
 	test/test_byte_to_hex
+	test/test_fixed_time_equal
 	test/test_base64url
 	test/test_crypto
 	test/test_keygen
@@ -68,6 +71,7 @@ test: buildtest
 
 cleantest:
 	rm -f test/test_byte_to_hex; rm -f test/test_byte_to_hex.o
+	rm -f test/test_fixed_time_equal; rm -f test/test_fixed_time_equal.o
 	rm -f test/test_base64url; rm -f test/test_base64url.o
 	rm -f test/test_crypto; rm -f test/test_crypto.o
 	rm -f test/test_keygen; rm -f test/test_keygen.o

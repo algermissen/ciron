@@ -99,6 +99,23 @@ void ciron_bytes_to_hex(const unsigned char *bytes, int len, unsigned char *buf)
 	}
 }
 
+
+
+int fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len) {
+
+	int equal = 1;
+	int i;
+	for(i = 0; i<len;i++) {
+		if(lhs[i] != rhs[i]) {
+			equal = 0;
+		}
+	}
+
+	return equal;
+}
+
+
+
 /** Tracing and assertion utilities below
  *
  */

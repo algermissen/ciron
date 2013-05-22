@@ -128,6 +128,10 @@ CironError CIRONAPI ciron_set_error(CironContext ctx, const char *file, int line
  */
 void CIRONAPI ciron_bytes_to_hex(const unsigned char *bytes, int len, unsigned char *buf);
 
+/** Fixed time byte-wise comparision.
+ *
+ */
+int fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len);
 
 
 /** The remainder of this header file defines utilities for
