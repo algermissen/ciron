@@ -98,7 +98,7 @@ struct Algorithm {
  */
 struct Options {
 	int salt_bits;
-	Algorithm algorithm;
+	HawkcAlgorithm algorithm;
 	int iterations;
 };
 
@@ -130,8 +130,9 @@ void CIRONAPI ciron_bytes_to_hex(const unsigned char *bytes, int len, unsigned c
 
 /** Fixed time byte-wise comparision.
  *
+ * Return 1 if the supplied byte sequences are byte-wise equal, 0 otherwise.
  */
-int fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len);
+int hawkc_fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len);
 
 
 /** The remainder of this header file defines utilities for

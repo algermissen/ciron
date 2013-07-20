@@ -16,15 +16,15 @@ extern "C" {
 #endif
 
 typedef struct Options *Options;
-typedef struct Algorithm *Algorithm;
+typedef struct Algorithm *HawkcAlgorithm;
 
 /** The algorithms and options defined by ciron.
  *
  * Please refer to common.c for their definition.
  */
-extern Algorithm AES_128_CBC;
-extern Algorithm AES_256_CBC;
-extern Algorithm SHA_256;
+extern HawkcAlgorithm AES_128_CBC;
+extern HawkcAlgorithm AES_256_CBC;
+extern HawkcAlgorithm HAWKC_SHA_256;
 extern Options DEFAULT_ENCRYPTION_OPTIONS;
 extern Options DEFAULT_INTEGRITY_OPTIONS;
 

@@ -567,7 +567,7 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	 * And check for HMAC equality. If this succeeds, we know that no one has tampered
 	 * with the input.
 	 */
-	if (! fixed_time_equal(incodming_integrity_hmac_bytes.chars, integrity_hmac_bytes.chars,
+	if (! hawkc_fixed_time_equal(incodming_integrity_hmac_bytes.chars, integrity_hmac_bytes.chars,
 			integrity_hmac_bytes.len) ) {
 		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
 				CIRON_TOKEN_VALIDATION_ERROR, "HMAC signature invalid");

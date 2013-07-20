@@ -15,3 +15,15 @@
 *.exe
 *.out
 *.app
+
+.cproject
+.project
+.settings
+Makefile
+config.log
+config.status
+iron/iron
+test/data/sealed_smallticket.js
+test/data/sealed_ticket.js
+test/data/smallticket.js
+test/data/ticket.js

@@ -12,12 +12,12 @@ int test_fixed_time_equal() {
 	unsigned char bytes2[4] = { 255, 0, 255, 0 };
 	unsigned char bytes2_1[4] = { 255, 0, 255, 0 };
 
-	EXPECT_TRUE(fixed_time_equal(single0,single0_1,1 ));
-	EXPECT_TRUE(fixed_time_equal(bytes2,bytes2_1,4 ));
+	EXPECT_TRUE(hawkc_fixed_time_equal(single0,single0_1,1 ));
+	EXPECT_TRUE(hawkc_fixed_time_equal(bytes2,bytes2_1,4 ));
 
-	EXPECT_TRUE(!fixed_time_equal(single0,singleFF,1 ));
+	EXPECT_TRUE(!hawkc_fixed_time_equal(single0,singleFF,1 ));
 
-	EXPECT_TRUE(!fixed_time_equal(bytes,bytes2,4 ));
+	EXPECT_TRUE(!hawkc_fixed_time_equal(bytes,bytes2,4 ));
 
 
 	return 1;
