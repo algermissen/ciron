@@ -1,7 +1,7 @@
 /* The base64.c for the original license of the base64 code */
 
-#ifndef BASE64_H
-#define BASE64_H
+#ifndef CIRON_BASE64URL_H
+#define CIRON_BASE64URL_H
 
 #include "ciron.h"
 

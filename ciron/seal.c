@@ -46,7 +46,7 @@ static CironError parse_fixed_len(CironContext context,
 static CironError parse_max_len(CironContext context, const unsigned char *data,
 		int len, int max_len, struct const_chars_and_len *balp);
 
-int calculate_encryption_buffer_length(Options encryption_options, int data_len) {
+int ciron_calculate_encryption_buffer_length(CironOptions encryption_options, int data_len) {
 	/* for all CBC. But see https://github.com/algermissen/ciron/issues/5 */
 	int cipher_block_size = 16; /* FIXME: at some point, make this dynamic */
 	/* Taken from http://www.obviex.com/articles/ciphertextsize.aspx */
@@ -59,8 +59,8 @@ int calculate_encryption_buffer_length(Options encryption_options, int data_len)
  * the calculations.
  */
 
-int calculate_seal_buffer_length(Options encryption_options,
-		Options integrity_options, int data_len) {
+int ciron_calculate_seal_buffer_length(CironOptions encryption_options,
+		CironOptions integrity_options, int data_len) {
 
 	int len = 6; /* MAC_PREFIIX */
 	len++; /* delimiter */
@@ -70,7 +70,7 @@ int calculate_seal_buffer_length(Options encryption_options,
 	len++; /* delimiter */
 	len += BASE64URL_ENCODE_SIZE(NBYTES(encryption_options->algorithm->iv_bits)); /* Base64url encoded IV */
 	len++; /* delimiter */
-	len += BASE64URL_ENCODE_SIZE( calculate_encryption_buffer_length(encryption_options, data_len)); /* Base64url encoded encrypted data */
+	len += BASE64URL_ENCODE_SIZE( ciron_calculate_encryption_buffer_length(encryption_options, data_len)); /* Base64url encoded encrypted data */
 	len++; /* delimiter */
 	len += NBYTES(integrity_options->salt_bits) * 2; /* Integrity salt (NBYTES * 2 due to hex encoding) */
 	len++; /* delimiter */
@@ -78,8 +78,8 @@ int calculate_seal_buffer_length(Options encryption_options,
 	return len;
 }
 
-int calculate_unseal_buffer_length(Options encryption_options,
-		Options integrity_options, int data_len) {
+int ciron_calculate_unseal_buffer_length(CironOptions encryption_options,
+		CironOptions integrity_options, int data_len) {
 
 	int len = data_len;
 
@@ -112,7 +112,7 @@ int calculate_unseal_buffer_length(Options encryption_options,
 
 CironError ciron_seal(CironContext context, const unsigned char *data,
 		int data_len, const unsigned char* password, int password_len,
-		Options encryption_options, Options integrity_options,
+		CironOptions encryption_options, CironOptions integrity_options,
 		unsigned char *buffer_encrypted_bytes, unsigned char *result, int *plen) {
 
 	CironError e;
@@ -359,7 +359,7 @@ CironError ciron_seal(CironContext context, const unsigned char *data,
 
 CironError ciron_unseal(CironContext context, const unsigned char *data,
 		int data_len, const unsigned char* password, int password_len,
-		Options encryption_options, Options integrity_options,
+		CironOptions encryption_options, CironOptions integrity_options,
 		unsigned char *buffer_encrypted_bytes, unsigned char *result, int *plen) {
 
 	CironError e;
@@ -567,7 +567,7 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	 * And check for HMAC equality. If this succeeds, we know that no one has tampered
 	 * with the input.
 	 */
-	if (! hawkc_fixed_time_equal(incodming_integrity_hmac_bytes.chars, integrity_hmac_bytes.chars,
+	if (! ciron_fixed_time_equal(incodming_integrity_hmac_bytes.chars, integrity_hmac_bytes.chars,
 			integrity_hmac_bytes.len) ) {
 		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
 				CIRON_TOKEN_VALIDATION_ERROR, "HMAC signature invalid");

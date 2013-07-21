@@ -16,13 +16,13 @@
  * Also, you must add to the selection if-cascades in crypto_openssl.c for them
  * to be recognized.
  */
-struct Algorithm _AES_128_CBC = { "aes-128-cbc", 128, 128 };
-struct Algorithm _AES_256_CBC = { "aes-256-cbc", 256, 128 };
-struct Algorithm _HAWKC_SHA_256 = { "sha256", 256, 0 };
+struct CironAlgorithm _AES_128_CBC = { "aes-128-cbc", 128, 128 };
+struct CironAlgorithm _AES_256_CBC = { "aes-256-cbc", 256, 128 };
+struct CironAlgorithm _SHA_256 = { "sha256", 256, 0 };
 
-HawkcAlgorithm AES_128_CBC = &_AES_128_CBC;
-HawkcAlgorithm AES_256_CBC = &_AES_256_CBC;
-HawkcAlgorithm HAWKC_SHA_256 = &_HAWKC_SHA_256;
+CironAlgorithm CIRON_AES_128_CBC = &_AES_128_CBC;
+CironAlgorithm CIRON_AES_256_CBC = &_AES_256_CBC;
+CironAlgorithm CIRON_SHA_256 = &_SHA_256;
 
 /** Default options provided by ciron.
  *
@@ -35,11 +35,11 @@ HawkcAlgorithm HAWKC_SHA_256 = &_HAWKC_SHA_256;
  *
  *
  */
-struct Options _DEFAULT_ENCRYPTION_OPTIONS = { 256, &_AES_256_CBC, 1 };
-struct Options _DEFAULT_INTEGRITY_OPTIONS = { 256, &_HAWKC_SHA_256, 1 };
+struct CironOptions _DEFAULT_ENCRYPTION_OPTIONS = { 256, &_AES_256_CBC, 1 };
+struct CironOptions _DEFAULT_INTEGRITY_OPTIONS = { 256, &_SHA_256, 1 };
 
-Options DEFAULT_ENCRYPTION_OPTIONS = &_DEFAULT_ENCRYPTION_OPTIONS;
-Options DEFAULT_INTEGRITY_OPTIONS = &_DEFAULT_INTEGRITY_OPTIONS;
+CironOptions CIRON_DEFAULT_ENCRYPTION_OPTIONS = &_DEFAULT_ENCRYPTION_OPTIONS;
+CironOptions CIRON_DEFAULT_INTEGRITY_OPTIONS = &_DEFAULT_INTEGRITY_OPTIONS;
 
 /** Error strings used by ciron_strerror
  *
@@ -101,7 +101,7 @@ void ciron_bytes_to_hex(const unsigned char *bytes, int len, unsigned char *buf)
 
 
 
-int hawkc_fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len) {
+int ciron_fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len) {
 
 	int equal = 1;
 	int i;

@@ -51,7 +51,7 @@ CironError CIRONAPI ciron_generate_iv(CironContext context, int nbytes,
  */
 CironError CIRONAPI ciron_generate_key(CironContext context,
 		const unsigned char* password, int password_len,
-		const unsigned char *salt, int salt_len, HawkcAlgorithm algorithm,
+		const unsigned char *salt, int salt_len, CironAlgorithm algorithm,
 		int iterations, unsigned char *buf);
 
 /** Encrypt the provided data using the specified algorithm.
@@ -79,7 +79,7 @@ CironError CIRONAPI ciron_generate_key(CironContext context,
  * The result will not be \0 terminated.
  *
  */
-CironError CIRONAPI ciron_encrypt(CironContext context, HawkcAlgorithm algorithm,
+CironError CIRONAPI ciron_encrypt(CironContext context, CironAlgorithm algorithm,
 		const unsigned char *key, const unsigned char *iv,
 		const unsigned char *data, int data_len, unsigned char *buf, int *sizep);
 
@@ -108,7 +108,7 @@ CironError CIRONAPI ciron_encrypt(CironContext context, HawkcAlgorithm algorithm
  * The result will not be \0 terminated.
  *
  */
-CironError CIRONAPI ciron_decrypt(CironContext context, HawkcAlgorithm algorithm,
+CironError CIRONAPI ciron_decrypt(CironContext context, CironAlgorithm algorithm,
 		const unsigned char *key, const unsigned char *iv,
 		const unsigned char *data, int data_len, unsigned char *buf, int *sizep);
 
@@ -131,7 +131,7 @@ CironError CIRONAPI ciron_decrypt(CironContext context, HawkcAlgorithm algorithm
  * The result will not be \0 terminated.
  *
  */
-CironError CIRONAPI ciron_hmac(CironContext context, HawkcAlgorithm algorithm,
+CironError CIRONAPI ciron_hmac(CironContext context, CironAlgorithm algorithm,
 		const unsigned char *password, int password_len,
 		const unsigned char *salt_bytes, int salt_len, int iterations,
 		const unsigned char *data, int data_len, unsigned char *result,

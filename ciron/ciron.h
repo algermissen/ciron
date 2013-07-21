@@ -15,18 +15,18 @@ extern "C" {
 #define CIRONAPI
 #endif
 
-typedef struct Options *Options;
-typedef struct Algorithm *HawkcAlgorithm;
+typedef struct CironOptions *CironOptions;
+typedef struct CironAlgorithm *CironAlgorithm;
 
 /** The algorithms and options defined by ciron.
  *
  * Please refer to common.c for their definition.
  */
-extern HawkcAlgorithm AES_128_CBC;
-extern HawkcAlgorithm AES_256_CBC;
-extern HawkcAlgorithm HAWKC_SHA_256;
-extern Options DEFAULT_ENCRYPTION_OPTIONS;
-extern Options DEFAULT_INTEGRITY_OPTIONS;
+extern CironAlgorithm CIRON_AES_128_CBC;
+extern CironAlgorithm CIRON_AES_256_CBC;
+extern CironAlgorithm CIRON_SHA_256;
+extern CironOptions CIRON_DEFAULT_ENCRYPTION_OPTIONS;
+extern CironOptions CIRON_DEFAULT_INTEGRITY_OPTIONS;
 
 
 /** ciron error codes
@@ -106,7 +106,7 @@ unsigned long CIRONAPI ciron_get_crypto_error(CironContext ctx);
  * is suitable for both contexts.
  *
  */
-int CIRONAPI calculate_encryption_buffer_length(Options encryption_options, int data_len);
+int CIRONAPI ciron_calculate_encryption_buffer_length(CironOptions encryption_options, int data_len);
 
 /** Calculate the buffer size needed to store the sealed result
  * of unsealed data of the supplied length.
@@ -120,7 +120,7 @@ int CIRONAPI calculate_encryption_buffer_length(Options encryption_options, int 
  * in multiples of the cipher block size.
  *
  */
-int CIRONAPI calculate_seal_buffer_length(Options encryption_options, Options integrity_options,int data_len);
+int CIRONAPI ciron_calculate_seal_buffer_length(CironOptions encryption_options, CironOptions integrity_options,int data_len);
 
 /** Calculate the buffer size needed to store the unsealed
  * result of sealed data of the supplied length.
@@ -132,7 +132,7 @@ int CIRONAPI calculate_seal_buffer_length(Options encryption_options, Options in
  * unsealed data remains.
  *
  */
-int CIRONAPI calculate_unseal_buffer_length(Options encryption_options, Options integrity_options,int data_len);
+int CIRONAPI ciron_calculate_unseal_buffer_length(CironOptions encryption_options, CironOptions integrity_options,int data_len);
 
 /** Seal the supplied data.
  *
@@ -160,7 +160,7 @@ int CIRONAPI calculate_unseal_buffer_length(Options encryption_options, Options 
  *   store the actual length of the generated encapsulated token.
  */
 CironError CIRONAPI ciron_seal(CironContext ctx,const unsigned char *data, int data_len, const unsigned char* password,
-		int password_len, Options encryption_options, Options integrity_options, unsigned char *buffer_encrypted_bytes, unsigned char *buf, int *plen);
+		int password_len, CironOptions encryption_options, CironOptions integrity_options, unsigned char *buffer_encrypted_bytes, unsigned char *buf, int *plen);
 
 /** Unseal the supplied data.
  *
@@ -193,8 +193,8 @@ CironError CIRONAPI ciron_seal(CironContext ctx,const unsigned char *data, int d
  */
 
 CironError CIRONAPI ciron_unseal(CironContext ctx,const unsigned char *data, int data_len,
-		const unsigned char* password, int password_len, Options encryption_options,
-		Options integrity_options, unsigned char *buffer_encrypted_bytes,unsigned char *result, int *plen);
+		const unsigned char* password, int password_len, CironOptions encryption_options,
+		CironOptions integrity_options, unsigned char *buffer_encrypted_bytes,unsigned char *result, int *plen);
 
 
 

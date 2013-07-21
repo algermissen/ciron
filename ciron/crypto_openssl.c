@@ -11,7 +11,7 @@
 #include "ciron.h"
 #include "common.h"
 
-CironError ciron_encrypt(CironContext context, HawkcAlgorithm algorithm,
+CironError ciron_encrypt(CironContext context, CironAlgorithm algorithm,
 		const unsigned char *key, const unsigned char *iv,
 		const unsigned char *data, int data_len, unsigned char *buf, int *sizep) {
 	int r;
@@ -25,13 +25,13 @@ CironError ciron_encrypt(CironContext context, HawkcAlgorithm algorithm,
 
 	EVP_CIPHER_CTX_init(&ctx);
 
-	if (strcmp(algorithm->name, AES_128_CBC->name) == 0) {
+	if (strcmp(algorithm->name, CIRON_AES_128_CBC->name) == 0) {
 		if ((r = EVP_EncryptInit(&ctx, EVP_aes_128_cbc(), key, iv)) != 1) {
 			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to initialize encrypt cipher");
 		}
-	} else if (strcmp(algorithm->name, AES_256_CBC->name) == 0) {
+	} else if (strcmp(algorithm->name, CIRON_AES_256_CBC->name) == 0) {
 		if ((r = EVP_EncryptInit(&ctx, EVP_aes_256_cbc(), key, iv)) != 1) {
 			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
@@ -59,7 +59,7 @@ CironError ciron_encrypt(CironContext context, HawkcAlgorithm algorithm,
 	return CIRON_OK;
 }
 
-CironError ciron_decrypt(CironContext context, HawkcAlgorithm algorithm,
+CironError ciron_decrypt(CironContext context, CironAlgorithm algorithm,
 		const unsigned char *key, const unsigned char *iv,
 		const unsigned char *data, int data_len, unsigned char *buf, int *sizep) {
 	int r;
@@ -74,13 +74,13 @@ CironError ciron_decrypt(CironContext context, HawkcAlgorithm algorithm,
 
 	EVP_CIPHER_CTX_init(&ctx);
 
-	if (strcmp(algorithm->name, AES_128_CBC->name) == 0) {
+	if (strcmp(algorithm->name, CIRON_AES_128_CBC->name) == 0) {
 		if ((r = EVP_DecryptInit(&ctx, EVP_aes_128_cbc(), key, iv)) != 1) {
 			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to initialize decrypt cipher");
 		}
-	} else if (strcmp(algorithm->name, AES_256_CBC->name) == 0) {
+	} else if (strcmp(algorithm->name, CIRON_AES_256_CBC->name) == 0) {
 		if ((r = EVP_DecryptInit(&ctx, EVP_aes_256_cbc(), key, iv)) != 1) {
 			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
@@ -110,7 +110,7 @@ CironError ciron_decrypt(CironContext context, HawkcAlgorithm algorithm,
 
 CironError ciron_generate_key(CironContext context,
 		const unsigned char* password, int password_len,
-		const unsigned char *salt, int salt_len, HawkcAlgorithm algorithm,
+		const unsigned char *salt, int salt_len, CironAlgorithm algorithm,
 		int iterations, unsigned char *buf) {
 	int keylen;
 	int r;
@@ -159,7 +159,7 @@ CironError ciron_generate_iv(CironContext context, int nbytes,
 	return CIRON_OK;
 }
 
-CironError ciron_hmac(CironContext context, HawkcAlgorithm algorithm,
+CironError ciron_hmac(CironContext context, CironAlgorithm algorithm,
 		const unsigned char *password, int password_len,
 		const unsigned char *salt_bytes, int salt_len, int iterations,
 		const unsigned char *data, int data_len, unsigned char *result,
@@ -176,7 +176,7 @@ CironError ciron_hmac(CironContext context, HawkcAlgorithm algorithm,
 		return e;
 	}
 
-	if (strcmp(algorithm->name, HAWKC_SHA_256->name) == 0) {
+	if (strcmp(algorithm->name, CIRON_SHA_256->name) == 0) {
 		if ((HMAC(EVP_sha256(), buffer_key_bytes, key_len, data, data_len,
 				result, (unsigned int*) result_len)) == NULL ) {
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),

@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H 1
+#ifndef CIRON_COMMON_H
+#define CIRON_COMMON_H 1
 #include <ctype.h>
 #include <math.h>
 #include "config.h"
@@ -88,7 +88,7 @@ extern "C" {
 
 /** Structure for the Algorithm typedef in ciron.h
  */
-struct Algorithm {
+struct CironAlgorithm {
 	const char* name;
 	int key_bits;
 	int iv_bits;
@@ -96,9 +96,9 @@ struct Algorithm {
 
 /** Structure for the Options typedef in ciron.h
  */
-struct Options {
+struct CironOptions {
 	int salt_bits;
-	HawkcAlgorithm algorithm;
+	CironAlgorithm algorithm;
 	int iterations;
 };
 
@@ -132,7 +132,7 @@ void CIRONAPI ciron_bytes_to_hex(const unsigned char *bytes, int len, unsigned c
  *
  * Return 1 if the supplied byte sequences are byte-wise equal, 0 otherwise.
  */
-int hawkc_fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len);
+int ciron_fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len);
 
 
 /** The remainder of this header file defines utilities for
@@ -177,5 +177,5 @@ void CIRONAPI ciron_assert(const char*,const char *,unsigned);
 #endif
 
 
-#endif /* !defined COMMON_H */
+#endif /* !defined CIRON_COMMON_H */
  

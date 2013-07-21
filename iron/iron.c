@@ -38,8 +38,8 @@ int main(int argc, char **argv) {
 
 	int option;
 	seal_t mode = SEAL;
-	Options encryption_options = DEFAULT_ENCRYPTION_OPTIONS;
-	Options integrity_options = DEFAULT_INTEGRITY_OPTIONS;
+	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
+	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 
 	struct CironContext ctx;
 
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
 	 * string. ciron provides a function to calculate the buffer size from the
 	 * input data size.
 	 */
-	encryption_buffer_len = calculate_encryption_buffer_length(encryption_options, input_len);
+	encryption_buffer_len = ciron_calculate_encryption_buffer_length(encryption_options, input_len);
 	if( (encryption_buffer = malloc(encryption_buffer_len)) == NULL) {
 		perror("Unable to allocate encryption buffer");
 		exit(5);
@@ -128,10 +128,10 @@ int main(int argc, char **argv) {
 	 */
 	if (mode == SEAL) {
 		/* We add 1 byte because we want to \0-terminate the buffer */
-		output_buffer_len = calculate_seal_buffer_length(encryption_options, integrity_options, input_len) + 1;
+		output_buffer_len = ciron_calculate_seal_buffer_length(encryption_options, integrity_options, input_len) + 1;
 	} else {
 		/* We add 1 byte because we want to \0-terminate the buffer */
-		output_buffer_len = calculate_unseal_buffer_length(encryption_options, integrity_options, input_len) + 1;
+		output_buffer_len = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options, input_len) + 1;
 	}
 	if(verbose) {
 			fprintf(stderr,"Will allocate %d bytes for output buffer\n", output_buffer_len);

@@ -3,9 +3,9 @@
 #include "test.h"
 
 /* Algorithm vars with key lengths of 20, 25, and 16 bytes for the tests. */
-struct Algorithm Test20bytesKeyLen = { "not-needed", 160, 0 };
-struct Algorithm Test25bytesKeyLen = { "not-needed", 200, 0 };
-struct Algorithm Test16bytesKeyLen = { "not-needed", 128, 0 };
+struct CironAlgorithm Test20bytesKeyLen = { "not-needed", 160, 0 };
+struct CironAlgorithm Test25bytesKeyLen = { "not-needed", 200, 0 };
+struct CironAlgorithm Test16bytesKeyLen = { "not-needed", 128, 0 };
 
 struct CironContext ctx;
 

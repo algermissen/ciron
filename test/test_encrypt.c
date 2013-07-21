@@ -34,13 +34,13 @@ int test_encrypt_decrypt() {
 
 	ciron_generate_salt(&ctx,SALT_NBYTES, salt_chars);
 	ciron_generate_key(&ctx,PASSWORD, PASSWORD_LEN, salt_bytes, SALT_NBYTES * 2,
-			AES_256_CBC, ITERATIONS, key_bytes);
+			CIRON_AES_256_CBC, ITERATIONS, key_bytes);
 	ciron_generate_iv(&ctx,IV_NBYTES, iv_bytes);
 
-	ciron_encrypt(&ctx,AES_256_CBC, key_bytes, iv_bytes, data, data_len,
+	ciron_encrypt(&ctx,CIRON_AES_256_CBC, key_bytes, iv_bytes, data, data_len,
 			encrypted_bytes, &encrypted_len);
 
-	ciron_decrypt(&ctx,AES_256_CBC, key_bytes, iv_bytes, encrypted_bytes, encrypted_len,
+	ciron_decrypt(&ctx,CIRON_AES_256_CBC, key_bytes, iv_bytes, encrypted_bytes, encrypted_len,
 			decrypted_bytes, &decrypted_len);
 
 

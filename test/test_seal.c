@@ -17,8 +17,8 @@ const unsigned char password[] = { 's' , 'e' , 'c' , 'r' , 'e' , 't'};
 const int password_len = 6;
 
 int test_length_of_sealed() {
-	Options encryption_options = DEFAULT_ENCRYPTION_OPTIONS;
-	Options integrity_options = DEFAULT_INTEGRITY_OPTIONS;
+	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
+	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 	const unsigned char data[] = { 'T','e','s','t'};
 	int data_len = 4;
 	int result_len;
@@ -36,8 +36,8 @@ int test_length_of_sealed() {
 
 
 int test_unseal_ok() {
-	Options encryption_options = DEFAULT_ENCRYPTION_OPTIONS;
-	Options integrity_options = DEFAULT_INTEGRITY_OPTIONS;
+	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
+	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 	const unsigned char expected[] = { 'T','e','s','t'};
 	unsigned char *data =
 			(unsigned char *) "Fe26.1**631b0bba26b306c9803ae7509816fa08905f9827bc4eec0517c93e5772e49d2c*hMXUUOqIlobjwLVgc0Xm7Q*P-bwmfd6vOwkjsB2k4neLQ*3a14c99729334d3e9384f2636913f92da6b583db6251530852ec31640fd1d654*Rzuqqx9QIw3MDrTW3muP2aWVahdZoTSAXucYnmrj16U";
@@ -56,11 +56,10 @@ int test_unseal_ok() {
 	return 1;
 }
 int test_unseal_ok2() {
-	Options encryption_options = DEFAULT_ENCRYPTION_OPTIONS;
-	Options integrity_options = DEFAULT_INTEGRITY_OPTIONS;
+	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
+	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 	const unsigned char pwd[] = { 'x' , 'x' , 'x' };
 	const int pwd_len = 3;
-	int i;
 
 	const unsigned char expected[] = { 't','e','s','t' , '\0'};
 	unsigned char *data =
@@ -81,8 +80,8 @@ int test_unseal_ok2() {
 }
 int test_unseal_fails_on_invalid_prefix() {
 	CironError e;
-	Options encryption_options = DEFAULT_ENCRYPTION_OPTIONS;
-	Options integrity_options = DEFAULT_INTEGRITY_OPTIONS;
+	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
+	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 	unsigned char *data =
 			(unsigned char *) "Fe26.2**631b0bba26b306c9803ae7509816fa08905f9827bc4eec0517c93e5772e49d2c*hMXUUOqIlobjwLVgc0Xm7Q*P-bwmfd6vOwkjsB2k4neLQ*3a14c99729334d3e9384f2636913f92da6b583db6251530852ec31640fd1d654*Rzuqqx9QIw3MDrTW3muP2aWVahdZoTSAXucYnmrj16U";
 	int data_len = 227;
@@ -98,9 +97,8 @@ int test_unseal_fails_on_invalid_prefix() {
 }
 int test_unseal_fails_on_invalid_hmac() {
 	CironError e;
-	Options encryption_options = DEFAULT_ENCRYPTION_OPTIONS;
-	Options integrity_options = DEFAULT_INTEGRITY_OPTIONS;
-	const unsigned char expected[] = { 'T','e','s','t'};
+	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
+	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 	unsigned char *data =
 			(unsigned char *) "Fe26.1**631b0bba26b306c9803ae7509816fa08905f9827bc4eec0517c93e5772e49d2c*hMXUUOqIlobjwLVgc0Xm7Q*P-bwmfd6vOwkjsB2k4neLQ*3a14c99729334d3e9384f2636913f92da6b583db6251530852ec31640fd1d654*Rzuqqx9QIw3MDrTW3muP2aWVahdZoTSAXucYnmrj16x";
 	int data_len = 227;
@@ -116,9 +114,8 @@ int test_unseal_fails_on_invalid_hmac() {
 }
 int test_unseal_fails_on_wrong_password() {
 	CironError e;
-	Options encryption_options = DEFAULT_ENCRYPTION_OPTIONS;
-	Options integrity_options = DEFAULT_INTEGRITY_OPTIONS;
-	const unsigned char expected[] = { 'T','e','s','t'};
+	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
+	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 	unsigned char *data =
 			(unsigned char *) "Fe26.1**631b0bba26b306c9803ae7509816fa08905f9827bc4eec0517c93e5772e49d2c*hMXUUOqIlobjwLVgc0Xm7Q*P-bwmfd6vOwkjsB2k4neLQ*3a14c99729334d3e9384f2636913f92da6b583db6251530852ec31640fd1d654*Rzuqqx9QIw3MDrTW3muP2aWVahdZoTSAXucYnmrj16U";
 	int data_len = 227;
@@ -133,8 +130,8 @@ int test_unseal_fails_on_wrong_password() {
 	return 0;
 }
 int test_unseal_iron_token_ok() {
-	Options encryption_options = DEFAULT_ENCRYPTION_OPTIONS;
-	Options integrity_options = DEFAULT_INTEGRITY_OPTIONS;
+	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
+	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 	const unsigned char *expected = (unsigned char *)"{\"a\":1,\"b\":2,\"c\":[3,4,5],\"d\":{\"e\":\"f\"}}";
 	const unsigned char pwd[] = { 's' , 'o' , 'm' , 'e' , '_' , 'n','o','t','_','r','a','n','d','o','m','_','p','a','s','s','w','o','r','d'};
 	const int pwd_len = 24;

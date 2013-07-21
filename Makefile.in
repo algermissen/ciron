@@ -83,6 +83,9 @@ cleantest:
 
 all: $(LIB) $(IRON)
 
+install:
+	cp ciron/ciron.h /usr/local/include
+	cp ciron/libciron.a /usr/local/lib
 
 
 clean: cleantest
