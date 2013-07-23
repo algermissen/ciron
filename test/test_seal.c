@@ -31,7 +31,7 @@ int test_length_of_sealed() {
 	}
 	EXPECT_INT_EQUAL(227, result_len);
 
-	return 1;
+	return 0;
 }
 
 
@@ -53,7 +53,7 @@ int test_unseal_ok() {
 	EXPECT_INT_EQUAL(4, result_len);
 	EXPECT_BYTE_EQUAL(expected, sealbuf,result_len);
 
-	return 1;
+	return 0;
 }
 int test_unseal_ok2() {
 	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
@@ -76,7 +76,7 @@ int test_unseal_ok2() {
 	EXPECT_INT_EQUAL(5, result_len);
 	EXPECT_BYTE_EQUAL(expected, sealbuf,result_len);
 
-	return 1;
+	return 0;
 }
 int test_unseal_fails_on_invalid_prefix() {
 	CironError e;
@@ -91,7 +91,7 @@ int test_unseal_fails_on_invalid_prefix() {
 			encryption_options, integrity_options, cryptbuf, sealbuf,
 			&result_len)) != CIRON_OK) {
 		EXPECT_TRUE(e == CIRON_TOKEN_PARSE_ERROR);
-		return 1;
+		return 0;
 	}
 	return 0;
 }
@@ -108,7 +108,7 @@ int test_unseal_fails_on_invalid_hmac() {
 			encryption_options, integrity_options, cryptbuf, sealbuf,
 			&result_len)) != CIRON_OK) {
 		EXPECT_TRUE(e == CIRON_TOKEN_VALIDATION_ERROR);
-		return 1;
+		return 0;
 	}
 	return 0;
 }
@@ -125,7 +125,7 @@ int test_unseal_fails_on_wrong_password() {
 			encryption_options, integrity_options, cryptbuf, sealbuf,
 			&result_len)) != CIRON_OK) {
 		EXPECT_TRUE(e == CIRON_TOKEN_VALIDATION_ERROR);
-		return 1;
+		return 0;
 	}
 	return 0;
 }
@@ -154,7 +154,7 @@ int test_unseal_iron_token_ok() {
 	EXPECT_INT_EQUAL((int)strlen((char*)expected), result_len);
 	EXPECT_BYTE_EQUAL(expected, sealbuf,result_len);
 
-	return 1;
+	return 0;
 }
 
 

@@ -15,17 +15,15 @@ int test_that_keygen_generates_same_key() {
 	ciron_generate_key(&ctx,(unsigned char *)"password",  8, saltbuf, 64,
 			CIRON_DEFAULT_ENCRYPTION_OPTIONS->algorithm, 1, buf1);
 
-	ciron_generate_key(&ctx,(unsigned char *)"password",  8, saltbuf, 64,
+	ciron_generate_key(&ctx,(unsigned char *)"passwors",  8, saltbuf, 64,
 			CIRON_DEFAULT_ENCRYPTION_OPTIONS->algorithm, 1, buf2);
 
 	EXPECT_BYTE_EQUAL(buf1, buf2, NBYTES(CIRON_DEFAULT_ENCRYPTION_OPTIONS->algorithm->key_bits));
 
-	return 1;
+	return 0;
 }
 
 int main(int argc, char **argv) {
-
 	RUNTEST(argv[0],test_that_keygen_generates_same_key);
 	return 0;
-
 }

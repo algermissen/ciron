@@ -19,7 +19,7 @@ int test_fixed_time_equal() {
 	EXPECT_TRUE(!ciron_fixed_time_equal(bytes,bytes2,4 ));
 
 
-	return 1;
+	return 0;
 }
 
 

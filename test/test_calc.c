@@ -15,7 +15,7 @@ int test_that_crypt_buffer_is_at_least_blocksize() {
 	EXPECT_INT_EQUAL(16,n);
 
 
-	return 1;
+	return 0;
 }
 
 int test_that_crypt_buffer_is_block_size_boundary() {
@@ -37,7 +37,7 @@ int test_that_crypt_buffer_is_block_size_boundary() {
 	n = ciron_calculate_encryption_buffer_length(encryption_options,200665);
 	EXPECT_INT_EQUAL(200672,n);
 
-	return 1;
+	return 0;
 }
 
 int test_that_crypt_buffer_is_block_size_for_0_or_less() {
@@ -50,7 +50,7 @@ int test_that_crypt_buffer_is_block_size_for_0_or_less() {
 	n = ciron_calculate_encryption_buffer_length(encryption_options,-4);
 	EXPECT_INT_EQUAL(16,n);
 
-	return 1;
+	return 0;
 }
 
 int test_that_seal_buffer_at_least_227() {
@@ -67,7 +67,7 @@ int test_that_seal_buffer_at_least_227() {
 	n = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,15);
 	EXPECT_INT_EQUAL(227,n);
 
-	return 1;
+	return 0;
 }
 
 int test_seal_buffer_sizes() {
@@ -81,7 +81,7 @@ int test_seal_buffer_sizes() {
 	n = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,227);
 	EXPECT_TRUE(10 < n);
 
-	return 1;
+	return 0;
 }
 
 int test_that_unseal_gt_seal() {
@@ -111,7 +111,7 @@ int test_that_unseal_gt_seal() {
 	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns);
 	EXPECT_TRUE(N < nu);
 
-	return 1;
+	return 0;
 }
 
 int test_that_seal_unseal_atmost_blocksiz() {
@@ -142,7 +142,7 @@ int test_that_seal_unseal_atmost_blocksiz() {
 	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns);
 	EXPECT_TRUE((nu-N) <= BS);
 
-	return 1;
+	return 0;
 }
 
 

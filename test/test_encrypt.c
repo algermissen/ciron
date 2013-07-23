@@ -45,7 +45,7 @@ int test_encrypt_decrypt() {
 
 
 
-	return 1;
+	return 0;
 }
 
 /*

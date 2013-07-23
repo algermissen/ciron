@@ -35,7 +35,7 @@ int PBKDF2_HMAC_SHA1_Test_1() {
 	ciron_generate_key(&ctx,password, 8, salt, 4, &Test20bytesKeyLen, 1, key);
 	EXPECT_BYTE_EQUAL(expected, key, 20);
 
-	return 1;
+	return 0;
 }
 
 /*
@@ -63,7 +63,7 @@ int PBKDF2_HMAC_SHA1_Test_2() {
 	ciron_generate_key(&ctx,password, 8, salt, 4, &Test20bytesKeyLen, 2, key);
 	EXPECT_BYTE_EQUAL(expected, key, 20);
 
-	return 1;
+	return 0;
 }
 
 /*
@@ -89,7 +89,7 @@ int PBKDF2_HMAC_SHA1_Test_3() {
 	ciron_generate_key(&ctx,password, 8, salt, 4, &Test20bytesKeyLen, 4096, key);
 	EXPECT_BYTE_EQUAL(expected, key, 20);
 
-	return 1;
+	return 0;
 }
 /*
  * Input:
@@ -114,7 +114,7 @@ int PBKDF2_HMAC_SHA1_Test_4() {
 	ciron_generate_key(&ctx,password, 8, salt, 4, &Test20bytesKeyLen, 16777216, key);
 	EXPECT_BYTE_EQUAL(expected, key, 20);
 
-	return 1;
+	return 0;
 }
 /*
  * Input:
@@ -142,7 +142,7 @@ int PBKDF2_HMAC_SHA1_Test_5() {
 	ciron_generate_key(&ctx,pwd, 24, slt, 36, &Test25bytesKeyLen, 4096, key);
 	EXPECT_BYTE_EQUAL(expected, key, 25);
 
-	return 1;
+	return 0;
 }
 /*
  *    Input:
@@ -165,7 +165,7 @@ int PBKDF2_HMAC_SHA1_Test_6() {
 	ciron_generate_key(&ctx,pwd, 9, slt, 5, &Test16bytesKeyLen, 4096, key);
 	EXPECT_BYTE_EQUAL(expected, key, 16);
 
-	return 1;
+	return 0;
 }
 
 /*

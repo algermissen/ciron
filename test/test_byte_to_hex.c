@@ -22,7 +22,7 @@ int test_bytes_to_hex() {
 	ciron_bytes_to_hex(bytes2, 4, buf);
 	EXPECT_BYTE_EQUAL((unsigned char *)"ff00ff00", buf,8);
 
-	return 1;
+	return 0;
 }
 
 /*
@@ -76,7 +76,7 @@ int test_ciron_base64_encode() {
 	ciron_base64_encode(b6, 6, chars, &len);
 	EXPECT_STR_EQUAL("Zm9vYmFy", chars);
 
-	return 1;
+	return 0;
 }
 #endif
 /*
@@ -139,17 +139,13 @@ int test_ciron_base64_decode() {
 
 
 
-	return 1;
+	return 0;
 }
 #endif
 
 int main(int argc, char **argv) {
 
 	RUNTEST(argv[0],test_bytes_to_hex);
-	/*
-	TEST(test_ciron_base64_encode);
-	TEST(test_ciron_base64_decode);
-	*/
 
 	return 0;
 }

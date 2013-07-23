@@ -27,3 +27,5 @@ test/data/sealed_smallticket.js
 test/data/sealed_ticket.js
 test/data/smallticket.js
 test/data/ticket.js
+
+org.eclipse.core.resources.prefs
