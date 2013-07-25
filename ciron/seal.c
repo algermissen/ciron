@@ -418,6 +418,12 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	assert(NBYTES(encryption_options->algorithm->key_bits) <= MAX_KEY_BYTES);
 
 	/*
+         * Prevent compiler warning about possible uninitialzed use.
+         */
+        memset(&encryption_iv_b64urlchars,0,sizeof(struct const_chars_and_len));
+        memset(&encrypted_data_b64urlchars,0,sizeof(struct const_chars_and_len));
+
+	/*
 	 * Remember the start of the base string for later HMAC generation for
 	 * HMAC validation. We will set length later, once we are at that
 	 * parsing position.
