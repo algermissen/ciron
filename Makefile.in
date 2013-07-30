@@ -1,7 +1,7 @@
 #
 # Makefile for ciron
 #
-CC=@CC@
+CC=gcc
 AR=ar
 
 .SUFFIXES : .o .c 
