@@ -380,11 +380,13 @@ CironError ciron_seal(CironContext context, const unsigned char *data,
 }
 
 CironError ciron_unseal(CironContext context, const unsigned char *data,
-		int data_len, const unsigned char* password, int password_len,
+		int data_len, CironPwdTable pwd_table, const unsigned char* password, int password_len,
 		CironOptions encryption_options, CironOptions integrity_options,
 		unsigned char *buffer_encrypted_bytes, unsigned char *result, int *plen) {
 
 	CironError e;
+	int i;
+	int found_password;
 
 	/*
 	 * These are parse from the incoming data and point into that data block.
@@ -500,10 +502,40 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	TRACE("data_remain_len=%d now encryption salt\n" _ data_remain_len);
 #endif
 
+	if(password_id.len == 0 && password_len == 0) {
+		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
+						CIRON_PASSWORD_ROTATION_ERROR, "Sealed token does not contain password ID and provided password is empty");
+	}
+	found_password = 0;
+	if(pwd_table != NULL) {
+		/*
+		 * Now try to find the password in the password table and use that one if found.
+		 * if we found one, we re-point the function parameters password and password len to
+	 	 * the table entry.
+	 	 */
 
+		 for(i = 0; i < pwd_table->nentries; i++) {
+			 CironPwdTableEntry entry = &(pwd_table->entries[i]);
+			 if(entry->password_id_len != password_id.len) {
+				 continue;
+			 }
+			 if(memcmp(entry->password_id,password_id.chars, password_id.len) != 0) {
+				 continue;
+			 }
+			 password = entry->password;
+			 password_len = entry->password_len;
+			 found_password = 1;
+			 break;
+		 }
+	}
 	/*
-	 * FIXME Here we would need to make sure we find the password by supplied ID in the password table.
+	 * Right now, we accept if a password is not found in the table and fall back to the
+	 * provided password if it has been provided. If none was provided, we report an error.
 	 */
+	if(( !found_password ) && (password_len == 0)) {
+		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
+				CIRON_PASSWORD_ROTATION_ERROR, "Password with ID %.*s not found" , password_id.len, password_id.chars);
+	}
 
 
 	/*

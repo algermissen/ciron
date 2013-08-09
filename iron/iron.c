@@ -39,6 +39,9 @@ int main(int argc, char **argv) {
 
 	unsigned char buffer[BUF_SIZE];
 
+	struct CironPwdTableEntry pwd_table_entries[100];
+	struct CironPwdTable pwd_table;
+
 	int option;
 	seal_t mode = SEAL;
 	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
@@ -46,6 +49,8 @@ int main(int argc, char **argv) {
 
 	struct CironContext ctx;
 
+	pwd_table.entries = pwd_table_entries;
+	pwd_table.nentries = 0;
 
 	opterr = 0;
 
@@ -94,9 +99,46 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 
+	/*
+	 * Check whether the password is actually a password table.
+	 * Process if so.
+	 */
+	if(strstr(password," ") != NULL) {
+	     char *id, *pwd, *p;
+	     int i = 0;
+	     if(mode == SEAL) {
+	    		 fprintf(stderr,"Seal mode requires password instead of table\n");
+	    		 usage();
+	    		 exit(3);
+
+	     }
+
+	     for (id = strtok_r(password, " ", &p); id; id = strtok_r(NULL, " ", &p)) {
+	    	 pwd_table.entries[i].password_id = (unsigned char*)id;
+	    	 pwd_table.entries[i].password_id_len = strlen(id);
+
+	    	 if( (pwd = strtok_r(NULL, " ", &p)) == NULL) {
+	    		 fprintf(stderr,"Password table contains uneven number of elements\n");
+	    		 usage();
+	    		 exit(4);
+	    	 }
+	    	 pwd_table.entries[i].password = (unsigned char*)pwd;
+	    	 pwd_table.entries[i].password_len = strlen(pwd);
+	    	 i++;
+
+	     }
+	     password = NULL; /* Not needed anymore */
+	     password_len = 0;
+    	 pwd_table.nentries = i;
+    	 if(verbose) {
+    		 fprintf(stderr,"Storing id:pwd %s:%s\n" ,pwd_table.entries[i-1].password_id , pwd_table.entries[i-1].password );
+    	 }
+	}
+
+
 	if ((input = malloc(sizeof(char) * BUF_SIZE)) == NULL ) {
 		perror("Failed to allocate input buffer");
-		exit(3);
+		exit(5);
 	}
 
 	/* Read all input at once */
@@ -105,7 +147,7 @@ int main(int argc, char **argv) {
 		input_len += strlen((char*)buffer);
 		if ((input = realloc(input, input_len)) == NULL ) {
 			perror("Failed to reallocate input buffer");
-			exit(4);
+			exit(6);
 		}
 		strcat((char*)input, (char*)buffer);
 	}
@@ -124,7 +166,7 @@ int main(int argc, char **argv) {
 	encryption_buffer_len = ciron_calculate_encryption_buffer_length(encryption_options, input_len);
 	if( (encryption_buffer = malloc(encryption_buffer_len)) == NULL) {
 		perror("Unable to allocate encryption buffer");
-		exit(5);
+		exit(7);
 	}
 
 	if(verbose) {
@@ -150,7 +192,7 @@ int main(int argc, char **argv) {
 
 	if( (output_buffer = malloc(output_buffer_len)) == NULL) {
 		perror("Unable to allocate output buffer");
-		exit(6);
+		exit(8);
 	}
 
 	if(verbose) {
@@ -165,22 +207,22 @@ int main(int argc, char **argv) {
 				encryption_options, integrity_options, encryption_buffer,
 				output_buffer, &output_len)) != CIRON_OK) {
 			fprintf(stderr,"Unable to seal: %s\n" , ciron_get_error(&ctx));
-			exit(8);
+			exit(9);
 		}
 	} else {
 		CironError e;
 		/*
 		fprintf(stderr, "(%s)", input);
 		*/
-		if( (e =ciron_unseal(&ctx,input, input_len, password, password_len,
+		if( (e =ciron_unseal(&ctx,input, input_len, &pwd_table,password, password_len,
 				encryption_options, integrity_options, encryption_buffer,
 				output_buffer, &output_len)) != CIRON_OK) {
 			if(e == CIRON_TOKEN_PARSE_ERROR) {
 				fprintf(stderr,"Invalid token format, %s\n" , ciron_get_error(&ctx));
-				exit(7);
+				exit(10);
 			}
 			fprintf(stderr,"Unable to unseal: %s\n" , ciron_get_error(&ctx));
-			exit(8);
+			exit(11);
 
 		}
 	}
@@ -207,11 +249,12 @@ void help(void) {
 	usage();
 
 	printf("Options:\n");
-	printf("    -h               show this screen\n");
-	printf("    -v               verbose mode to print some diagnostic messages\n");
-	printf("    -p <password>    password to use for sealing/unsealing\n");
-	printf("    -i <password_id> password_id of the supplied password to support password rotation\n");
-	printf("    -s               seal the input (this is the default)\n");
-	printf("    -u               unseal the input\n");
+	printf("    -h                          show this screen\n");
+	printf("    -v                          verbose mode to print some diagnostic messages\n");
+	printf("    -p <password>               password to use for sealing/unsealing\n");
+	printf(" OR:-p \"id1 pwd1 id2 pwd2 ...\"  password table for password rotation\n");
+	printf("    -i <password_id>            password_id of the supplied password to support password rotation\n");
+	printf("    -s                          seal the input (this is the default)\n");
+	printf("    -u                          unseal the input\n");
 	printf("\n");
 }

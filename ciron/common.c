@@ -47,6 +47,7 @@ static const char *error_strings[] = {
 		"No error", /* CIRON_OK */
 		"Token parse error", /* CIRON_TOKEN_PARSE_ERROR */
 		"Token invalid", /* CIRON_TOKEN_VALIDATION_ERROR */
+		"Password rotation error" , /* CIRON_PASSWORD_ROTATION_ERROR */
 		"Unknown algorithm", /* CIRON_ERROR_UNKNOWN_ALGORITHM */
 		"Some unrecognized error in the crypto library occurred", /* CIRON_CRYPTO_ERROR */
 		NULL

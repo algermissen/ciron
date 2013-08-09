@@ -3,6 +3,16 @@ ciron
 
 A C implementation of [iron](https://github.com/hueniverse/iron).
 
+Status
+======
+
+Until ciron reaches version 1.0 you should not consider it production ready
+without some caution. However, as of version 0.9 ciron is feature complete
+and I have not experienced any bugs so far.
+
+I will myself be using ciron to secure a production REST-API over the next few
+weeks so production feedback can be expected and go into version 1.0.
+
 Building ciron
 ==============
 

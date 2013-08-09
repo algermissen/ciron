@@ -36,6 +36,7 @@ typedef enum {
 	CIRON_OK, /* no error */
 	CIRON_TOKEN_PARSE_ERROR, /* Token parse error */
 	CIRON_TOKEN_VALIDATION_ERROR, /* Token cannot be validated */
+	CIRON_PASSWORD_ROTATION_ERROR, /* Password rotation error */
 	CIRON_ERROR_UNKNOWN_ALGORITHM, /* Unknown algorithm */
 	CIRON_CRYPTO_ERROR /* Some unrecognized error in the crypo library ocurred */
 	/* If you add errors here, add them in common.c also */
@@ -66,6 +67,22 @@ typedef struct CironContext {
 	/** Error code of underlying crypto library, or 0 if not applicable */
 	unsigned long crypto_error;
 } *CironContext;
+
+/*
+ * Entry structure for password_id/password tables to support password rotation.
+ */
+typedef struct CironPwdTableEntry {
+	int password_id_len;
+	int password_len;
+	unsigned char *password_id;
+	unsigned char *password;
+} *CironPwdTableEntry;
+
+typedef struct CironPwdTable {
+	int nentries;
+	struct CironPwdTableEntry *entries;
+} *CironPwdTable;
+
 
 /** Get a human readable message about the last error
  * condition that ocurred for the given context.
@@ -173,6 +190,7 @@ CironError CIRONAPI ciron_seal(CironContext ctx,const unsigned char *data, int d
  *   message.
  * - data: The data to unseal.
  * - data_len: The length of the data to unseal.
+ * - pwd_table: Table of password IDs and passwords for password rotation.
  * - password: The password to use for unsealing. Note that there
  *   will be no copy made of this data inside ciron. If you intend
  *   to prevent the password memory from being paged to disk, you
@@ -196,6 +214,7 @@ CironError CIRONAPI ciron_seal(CironContext ctx,const unsigned char *data, int d
  */
 
 CironError CIRONAPI ciron_unseal(CironContext ctx,const unsigned char *data, int data_len,
+		CironPwdTable pwd_table,
 		const unsigned char* password, int password_len, CironOptions encryption_options,
 		CironOptions integrity_options, unsigned char *buffer_encrypted_bytes,unsigned char *result, int *plen);
 

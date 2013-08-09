@@ -47,7 +47,7 @@ int test_unseal_ok() {
 	int data_len = 227;
 	int result_len;
 
-	if ((ciron_unseal(&ctx, data, data_len, password, password_len,
+	if ((ciron_unseal(&ctx, data, data_len, NULL, password, password_len,
 			encryption_options, integrity_options, cryptbuf, sealbuf,
 			&result_len)) != CIRON_OK) {
 		fprintf(stderr, "Unable to unseal: %s\n", ciron_get_error(&ctx));
@@ -70,7 +70,7 @@ int test_unseal_ok2() {
 	int data_len = 227;
 	int result_len;
 
-	if ((ciron_unseal(&ctx, data, data_len, pwd, pwd_len,
+	if ((ciron_unseal(&ctx, data, data_len, NULL,pwd, pwd_len,
 			encryption_options, integrity_options, cryptbuf, sealbuf,
 			&result_len)) != CIRON_OK) {
 		fprintf(stderr, "Unable to unseal: %s\n", ciron_get_error(&ctx));
@@ -90,7 +90,7 @@ int test_unseal_fails_on_invalid_prefix() {
 	int data_len = 227;
 	int result_len;
 
-	if ((e = ciron_unseal(&ctx, data, data_len, password, password_len,
+	if ((e = ciron_unseal(&ctx, data, data_len, NULL,password, password_len,
 			encryption_options, integrity_options, cryptbuf, sealbuf,
 			&result_len)) != CIRON_OK) {
 		EXPECT_TRUE(e == CIRON_TOKEN_PARSE_ERROR);
@@ -107,7 +107,7 @@ int test_unseal_fails_on_invalid_hmac() {
 	int data_len = 227;
 	int result_len;
 
-	if ((e = ciron_unseal(&ctx, data, data_len, password, password_len,
+	if ((e = ciron_unseal(&ctx, data, data_len, NULL,password, password_len,
 			encryption_options, integrity_options, cryptbuf, sealbuf,
 			&result_len)) != CIRON_OK) {
 		EXPECT_TRUE(e == CIRON_TOKEN_VALIDATION_ERROR);
@@ -124,7 +124,7 @@ int test_unseal_fails_on_wrong_password() {
 	int data_len = 227;
 	int result_len;
 
-	if ((e = ciron_unseal(&ctx, data, data_len, password, password_len-1,
+	if ((e = ciron_unseal(&ctx, data, data_len, NULL,password, password_len-1,
 			encryption_options, integrity_options, cryptbuf, sealbuf,
 			&result_len)) != CIRON_OK) {
 		EXPECT_TRUE(e == CIRON_TOKEN_VALIDATION_ERROR);
@@ -144,7 +144,7 @@ int test_unseal_iron_token_ok() {
 	int data_len = 269;
 	int result_len;
 
-	if ((ciron_unseal(&ctx, data, data_len, pwd, pwd_len,
+	if ((ciron_unseal(&ctx, data, data_len, NULL,pwd, pwd_len,
 			encryption_options, integrity_options, cryptbuf, sealbuf,
 			&result_len)) != CIRON_OK) {
 		fprintf(stderr, "Unable to unseal: %s\n", ciron_get_error(&ctx));
