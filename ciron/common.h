@@ -46,8 +46,14 @@ extern "C" {
  *
  * Depends on MAX_IV_BYTES and amounts to ceil( MAX_IV_BYTES * 4/3 )
  *
+ * This is the same vale as calling BASE64URL_ENCODE_SIZE(MAX_IV_BYTES)
+ * macro defined below (but we need a macro to initialize arrays).
+ *
+ * Normally we would need to add room for the padding, but with BASE64 URL
+ * encoding, there is no padding.
+ *
  */
-#define MAX_IV_B64CHARS 44 /* FIXME: try with 43, wich would be the correct value */
+#define MAX_IV_B64URL_CHARS 43
 
 /* Maximum size of keys used.
  *
@@ -63,16 +69,17 @@ extern "C" {
 #define MAX_HMAC_BYTES 32
 
 /*
- * This is arbitrarily chosen
+ * This is the cipher block size for CBC ncryption algorithms. It is 16 for any of them.
+ * If you add algorithms, check this size and adjust if necessary.
+ * See https://github.com/algermissen/ciron/issues/5
  */
-/*
-#define MAX_PASSWORD_BYTES 256
-*/
+#define CIPHER_BLOCK_SIZE 16
 
 /** A macro to calculate byte size from number of bits.
  *
  */
 #define NBYTES(bits) (ceil((double) (bits) / 8) )
+
 
 /** A macro for calculated the maximal size of
  * a base64url encoding of a char array of length n.

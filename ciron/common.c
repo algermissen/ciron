@@ -5,7 +5,6 @@
 #include "ciron.h"
 #include "common.h"
 
-/* FIXME: docme, cleanme */
 
 /**
  * Algorithms provided by ciron.
@@ -42,7 +41,7 @@ CironOptions CIRON_DEFAULT_ENCRYPTION_OPTIONS = &_DEFAULT_ENCRYPTION_OPTIONS;
 CironOptions CIRON_DEFAULT_INTEGRITY_OPTIONS = &_DEFAULT_INTEGRITY_OPTIONS;
 
 /** Error strings used by ciron_strerror
- *
+ * The order here must correspond to the error codes in ciron.h
  */
 static const char *error_strings[] = {
 		"No error", /* CIRON_OK */

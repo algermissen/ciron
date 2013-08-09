@@ -27,13 +27,13 @@ CironError ciron_encrypt(CironContext context, CironAlgorithm algorithm,
 
 	if (strcmp(algorithm->name, CIRON_AES_128_CBC->name) == 0) {
 		if ((r = EVP_EncryptInit(&ctx, EVP_aes_128_cbc(), key, iv)) != 1) {
-			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
+			/* FIXME https://github.com/algermissen/ciron/issues/12 . And see three more occurrances below */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to initialize encrypt cipher");
 		}
 	} else if (strcmp(algorithm->name, CIRON_AES_256_CBC->name) == 0) {
 		if ((r = EVP_EncryptInit(&ctx, EVP_aes_256_cbc(), key, iv)) != 1) {
-			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
+			/* See https://github.com/algermissen/ciron/issues/12 */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to initialize encrypt cipher");
 		}
@@ -76,13 +76,13 @@ CironError ciron_decrypt(CironContext context, CironAlgorithm algorithm,
 
 	if (strcmp(algorithm->name, CIRON_AES_128_CBC->name) == 0) {
 		if ((r = EVP_DecryptInit(&ctx, EVP_aes_128_cbc(), key, iv)) != 1) {
-			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
+			/* See https://github.com/algermissen/ciron/issues/12 */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to initialize decrypt cipher");
 		}
 	} else if (strcmp(algorithm->name, CIRON_AES_256_CBC->name) == 0) {
 		if ((r = EVP_DecryptInit(&ctx, EVP_aes_256_cbc(), key, iv)) != 1) {
-			/* FIXME: Do I have to call EVP_CIPHER_CTX_cleanup(&ctx); here? */
+			/* See https://github.com/algermissen/ciron/issues/12 */
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to initialize decrypt cipher");
 		}

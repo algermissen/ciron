@@ -114,7 +114,17 @@ in `test/data`. For example
 
     $ cat token | iron -p some_pwd -u
 
+Note to Implementors
+====================
 
+When you plan to add features to ciron, please carefully note the following:
+
+* calculate_encryption_buffer_length() currently hard codes a 16byte cipher block size (which is correct for all CBC algorithms). This should be made dynamic if non-CBC algorithms are used.
+  See https://github.com/algermissen/ciron/issues/5
+  
+* If you add algorithms, you must check and maybe adjust several buffer size macros in ciron.h and common.h
+  These mocros are set the the maximum necessary length of cryptographic elements such as keys possibly used by ciron. Hence, they
+  depend on the actual algorithms provided.
 
 
 

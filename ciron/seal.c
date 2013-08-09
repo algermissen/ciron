@@ -48,7 +48,7 @@ static CironError parse_max_len(CironContext context, const unsigned char *data,
 
 int ciron_calculate_encryption_buffer_length(CironOptions encryption_options, int data_len) {
 	/* for all CBC. But see https://github.com/algermissen/ciron/issues/5 */
-	int cipher_block_size = 16; /* FIXME: at some point, make this dynamic */
+	int cipher_block_size = CIPHER_BLOCK_SIZE;
 	/* Taken from http://www.obviex.com/articles/ciphertextsize.aspx */
 	return data_len + cipher_block_size - (data_len % cipher_block_size);
 }
@@ -74,7 +74,8 @@ int ciron_calculate_seal_buffer_length(CironOptions encryption_options,
 	len++; /* delimiter */
 	len += NBYTES(integrity_options->salt_bits) * 2; /* Integrity salt (NBYTES * 2 due to hex encoding) */
 	len++; /* delimiter */
-	len += BASE64URL_ENCODE_SIZE(32); /* Base64url encoded HMAC (for HMAC SHA256 HMAC size is 32 bytes) FIXME: make dynamic for new algos */
+	len += BASE64URL_ENCODE_SIZE(32); /* Base64url encoded HMAC (for HMAC SHA256 HMAC size is 32 bytes)  */
+	/* see https://github.com/algermissen/ciron/issues/13 */
 	return len;
 }
 
@@ -95,14 +96,14 @@ int ciron_calculate_unseal_buffer_length(CironOptions encryption_options,
 	len--; /* delimiter */
 	len -= (NBYTES(integrity_options->salt_bits) * 2); /* Integrity salt (NBYTES * 2 due to hex encoding) */
 	len--; /* delimiter */
-	len -= BASE64URL_ENCODE_SIZE(32); /* Base64url encoded HMAC (for HMAC SHA256 HMAC size is 32 bytes) FIXME: make dynamic for new algos */
+	len -= BASE64URL_ENCODE_SIZE(32); /* Base64url encoded HMAC (for HMAC SHA256 HMAC size is 32 bytes) */
+	/* see https://github.com/algermissen/ciron/issues/13 */
 
 	/*
 	 * Now len is the length of the base64-encoded encrypted and we want the non-base64 encoded size:
 	 */
 	len = BASE64URL_DECODE_SIZE(len);
 
-	/* FIXME: make these functions return CironError? */
 	/* Protect us against too small initial values. We cannot be less than 0 */
 	if (len < 0) {
 		return 0;	
@@ -161,7 +162,7 @@ CironError ciron_seal(CironContext context, const unsigned char *data,
 	 * prefix*pwd*encSalt*iv64*data64* integritySalt*integrityHmac
 	 * Write the prefix (and later on password id) to the result buffer.
 	 * FIXME: password rotation pending
-	 * FIXME: use memcpy
+	 * https://github.com/algermissen/ciron/issues/4
 	 */
 
 	/*
@@ -480,7 +481,7 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	/*
 	 * Parse encryption IV base64url sequence.
 	 */
-	if ((e = parse_max_len(context, data_ptr, data_remain_len, MAX_IV_B64CHARS,
+	if ((e = parse_max_len(context, data_ptr, data_remain_len, MAX_IV_B64URL_CHARS,
 			&encryption_iv_b64urlchars) != CIRON_OK)) {
 		return e;
 	}
@@ -530,7 +531,7 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	 */
 	integrity_hmac_b64urlchars.chars = data_ptr;
 	integrity_hmac_b64urlchars.len = data_remain_len;
-	if (integrity_hmac_b64urlchars.len > 43) { /* FIXME: why is macro not working? Try it.*/
+	if (integrity_hmac_b64urlchars.len > MAX_IV_B64URL_CHARS) { /* FIXME: why is macro not working? Try it.*/
 		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
 				CIRON_TOKEN_PARSE_ERROR,
 				"Base64url encoded string of HMAC is too long. Parsed %d bytes, but max is %d",
@@ -594,7 +595,7 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	/*
 	 * Base64url decode the encryption IV. The size has been
 	 * verified during parsing, but we could do it
-	 * again here using the other macro. Try it -> FIXME
+	 * again here using the other macro. Try it -> FIXME. What did I actually mean here?
 	 */
 	encryption_iv_bytes.chars = buffer_encryption_iv_bytes;
 	ciron_base64url_decode(encryption_iv_b64urlchars.chars,
