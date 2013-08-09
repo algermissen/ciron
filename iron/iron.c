@@ -26,6 +26,9 @@ int main(int argc, char **argv) {
 	unsigned char *password = NULL;
 	int password_len = 0;
 
+	unsigned char *password_id = NULL;
+	int password_id_len = 0;
+
 	unsigned char *input;
 	int input_len = 1;
 	unsigned char *encryption_buffer;
@@ -46,7 +49,7 @@ int main(int argc, char **argv) {
 
 	opterr = 0;
 
-	while ((option = getopt(argc, argv, "-hvsup:")) != EOF) {
+	while ((option = getopt(argc, argv, "-hvsup:i:")) != EOF) {
 		switch (option) {
 		case 'h':
 			help();
@@ -67,6 +70,14 @@ int main(int argc, char **argv) {
 				exit(1);
 			}
 			strcpy((char*)password, optarg);
+			break;
+		case 'i':
+			password_id_len = strlen(optarg);
+			if( (password_id = malloc(password_id_len)) == NULL) {
+				perror("Unable to allocate password_id");
+				exit(1);
+			}
+			strcpy((char*)password_id, optarg);
 			break;
 		case '?':
 			usage();
@@ -128,10 +139,10 @@ int main(int argc, char **argv) {
 	 */
 	if (mode == SEAL) {
 		/* We add 1 byte because we want to \0-terminate the buffer */
-		output_buffer_len = ciron_calculate_seal_buffer_length(encryption_options, integrity_options, input_len) + 1;
+		output_buffer_len = ciron_calculate_seal_buffer_length(encryption_options, integrity_options, input_len,password_id_len) + 1;
 	} else {
 		/* We add 1 byte because we want to \0-terminate the buffer */
-		output_buffer_len = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options, input_len) + 1;
+		output_buffer_len = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options, input_len,password_id_len) + 1;
 	}
 	if(verbose) {
 			fprintf(stderr,"Will allocate %d bytes for output buffer\n", output_buffer_len);
@@ -150,7 +161,7 @@ int main(int argc, char **argv) {
 		/*
 		fprintf(stderr, "%s", password);
 		*/
-		if( (ciron_seal(&ctx,input, input_len, password, password_len,
+		if( (ciron_seal(&ctx,input, input_len, password_id,password_id_len,password, password_len,
 				encryption_options, integrity_options, encryption_buffer,
 				output_buffer, &output_len)) != CIRON_OK) {
 			fprintf(stderr,"Unable to seal: %s\n" , ciron_get_error(&ctx));
@@ -199,6 +210,7 @@ void help(void) {
 	printf("    -h               show this screen\n");
 	printf("    -v               verbose mode to print some diagnostic messages\n");
 	printf("    -p <password>    password to use for sealing/unsealing\n");
+	printf("    -i <password_id> password_id of the supplied password to support password rotation\n");
 	printf("    -s               seal the input (this is the default)\n");
 	printf("    -u               unseal the input\n");
 	printf("\n");

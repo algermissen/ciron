@@ -120,7 +120,7 @@ int CIRONAPI ciron_calculate_encryption_buffer_length(CironOptions encryption_op
  * in multiples of the cipher block size.
  *
  */
-int CIRONAPI ciron_calculate_seal_buffer_length(CironOptions encryption_options, CironOptions integrity_options,int data_len);
+int CIRONAPI ciron_calculate_seal_buffer_length(CironOptions encryption_options, CironOptions integrity_options,int data_len, int password_id_len);
 
 /** Calculate the buffer size needed to store the unsealed
  * result of sealed data of the supplied length.
@@ -132,7 +132,7 @@ int CIRONAPI ciron_calculate_seal_buffer_length(CironOptions encryption_options,
  * unsealed data remains.
  *
  */
-int CIRONAPI ciron_calculate_unseal_buffer_length(CironOptions encryption_options, CironOptions integrity_options,int data_len);
+int CIRONAPI ciron_calculate_unseal_buffer_length(CironOptions encryption_options, CironOptions integrity_options,int data_len, int password_id_len);
 
 /** Seal the supplied data.
  *
@@ -142,6 +142,8 @@ int CIRONAPI ciron_calculate_unseal_buffer_length(CironOptions encryption_option
  *   message.
  * - data: The data to seal.
  * - data_len: The length of the data to seal.
+ * - password_id: ID of the supplied password for password rotation
+ * - password_id_len: The length of the password_id
  * - password: The password to use for sealing. Note that there
  *   will be no copy made of this data inside ciron. If you intend
  *   to prevent the password memory from being paged to disk, you
@@ -159,7 +161,8 @@ int CIRONAPI ciron_calculate_unseal_buffer_length(CironOptions encryption_option
  * - plen: Pointer to an integer in which ciron will
  *   store the actual length of the generated encapsulated token.
  */
-CironError CIRONAPI ciron_seal(CironContext ctx,const unsigned char *data, int data_len, const unsigned char* password,
+CironError CIRONAPI ciron_seal(CironContext ctx,const unsigned char *data, int data_len, const unsigned char* password_id,
+		int password_id_len,const unsigned char* password,
 		int password_len, CironOptions encryption_options, CironOptions integrity_options, unsigned char *buffer_encrypted_bytes, unsigned char *buf, int *plen);
 
 /** Unseal the supplied data.

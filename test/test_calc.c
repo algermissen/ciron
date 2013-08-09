@@ -1,6 +1,8 @@
 #include "ciron.h"
 #include "test.h"
 
+const int password_id_len = 6;
+
 int test_that_crypt_buffer_is_at_least_blocksize() {
 	int n;
 	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
@@ -58,14 +60,14 @@ int test_that_seal_buffer_at_least_227() {
 	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
 	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 
-	n = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,1);
-	EXPECT_INT_EQUAL(227,n);
+	n = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,1,password_id_len);
+	EXPECT_INT_EQUAL(227+password_id_len,n);
 
-	n = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,10);
-	EXPECT_INT_EQUAL(227,n);
+	n = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,10,password_id_len);
+	EXPECT_INT_EQUAL(227+password_id_len,n);
 
-	n = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,15);
-	EXPECT_INT_EQUAL(227,n);
+	n = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,15,password_id_len);
+	EXPECT_INT_EQUAL(227+password_id_len,n);
 
 	return 0;
 }
@@ -75,10 +77,10 @@ int test_seal_buffer_sizes() {
 	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
 	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 
-	n = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,10);
-	EXPECT_INT_EQUAL(227,n);
+	n = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,10,password_id_len);
+	EXPECT_INT_EQUAL(227+password_id_len,n);
 
-	n = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,227);
+	n = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,227+password_id_len,password_id_len);
 	EXPECT_TRUE(10 < n);
 
 	return 0;
@@ -92,23 +94,23 @@ int test_that_unseal_gt_seal() {
 	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 
 	N = 1;
-	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N);
-	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns);
+	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N,password_id_len);
+	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns,password_id_len);
 	EXPECT_TRUE(N < nu);
 
 	N = 10;
-	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N);
-	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns);
+	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N,password_id_len);
+	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns,password_id_len);
 	EXPECT_TRUE(N < nu);
 
 	N = 100;
-	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N);
-	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns);
+	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N,password_id_len);
+	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns,password_id_len);
 	EXPECT_TRUE(N < nu);
 
 	N = 100000;
-	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N);
-	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns);
+	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N,password_id_len);
+	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns,password_id_len);
 	EXPECT_TRUE(N < nu);
 
 	return 0;
@@ -123,23 +125,23 @@ int test_that_seal_unseal_atmost_blocksiz() {
 	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 
 	N = 1;
-	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N);
-	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns);
+	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N,password_id_len);
+	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns,password_id_len);
 	EXPECT_TRUE((nu-N) <= BS);
 
 	N = 10;
-	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N);
-	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns);
+	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N,password_id_len);
+	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns,password_id_len);
 	EXPECT_TRUE((nu-N) <= BS);
 
 	N = 100;
-	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N);
-	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns);
+	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N,password_id_len);
+	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns,password_id_len);
 	EXPECT_TRUE((nu-N) <= BS);
 
 	N = 100000;
-	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N);
-	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns);
+	ns = ciron_calculate_seal_buffer_length(encryption_options, integrity_options,N,password_id_len);
+	nu = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options,ns,password_id_len);
 	EXPECT_TRUE((nu-N) <= BS);
 
 	return 0;

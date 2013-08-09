@@ -60,11 +60,11 @@ int ciron_calculate_encryption_buffer_length(CironOptions encryption_options, in
  */
 
 int ciron_calculate_seal_buffer_length(CironOptions encryption_options,
-		CironOptions integrity_options, int data_len) {
+		CironOptions integrity_options,int data_len, int password_id_len) {
 
 	int len = 6; /* MAC_PREFIIX */
 	len++; /* delimiter */
-	len += 0; /* password id impl. pending */
+	len += password_id_len;
 	len++; /* delimiter */
 	len = len + (NBYTES(encryption_options->salt_bits) * 2); /* Encryption salt (NBYTES * 2 due to hex encoding) */
 	len++; /* delimiter */
@@ -79,14 +79,17 @@ int ciron_calculate_seal_buffer_length(CironOptions encryption_options,
 	return len;
 }
 
+/*
+ * Explanation of what is going on here is in ciron.h
+ */
 int ciron_calculate_unseal_buffer_length(CironOptions encryption_options,
-		CironOptions integrity_options, int data_len) {
+		CironOptions integrity_options, int data_len, int password_id_len) {
 
 	int len = data_len;
 
 	len -= 6; /* MAC_PREFIIX */
 	len--; /* delimiter */
-	len -= 0; /* password id impl. pending */
+	len -= password_id_len;
 	len--; /* delimiter */
 	len -= (NBYTES(encryption_options->salt_bits) * 2); /* Encryption salt (NBYTES * 2 due to hex encoding) */
 	len--; /* delimiter */
@@ -112,11 +115,13 @@ int ciron_calculate_unseal_buffer_length(CironOptions encryption_options,
 }
 
 CironError ciron_seal(CironContext context, const unsigned char *data,
-		int data_len, const unsigned char* password, int password_len,
+		int data_len, const unsigned char* password_id, int password_id_len,
+		const unsigned char* password, int password_len,
 		CironOptions encryption_options, CironOptions integrity_options,
 		unsigned char *buffer_encrypted_bytes, unsigned char *result, int *plen) {
 
 	CironError e;
+	int prefix_len;
 	/*
 	 *  These are local buffers to hold data that is pointed to by the xxx_and_len structs
 	 */
@@ -158,20 +163,35 @@ CironError ciron_seal(CironContext context, const unsigned char *data,
 	assert(NBYTES(encryption_options->algorithm->iv_bits) <= MAX_IV_BYTES);
 	assert(NBYTES(encryption_options->algorithm->key_bits) <= MAX_KEY_BYTES);
 
+	result_ptr = result;
+
 	/*
 	 * prefix*pwd*encSalt*iv64*data64* integritySalt*integrityHmac
-	 * Write the prefix (and later on password id) to the result buffer.
-	 * FIXME: password rotation pending
-	 * https://github.com/algermissen/ciron/issues/4
 	 */
 
 	/*
-	 * Write the prefix, delimiter, empty password_id (implementation pending)
-	 * and another delimiter. Advance the result pointer.
+	 * Write the prefix and delimiter.
+	 * Advance the result pointer.
 	 */
-	assert(strlen(MAC_PREFIX) == 6);
-	memcpy(result, (unsigned char*) MAC_PREFIX "**", 8);
-	result_ptr = result + 8;
+	prefix_len = strlen(MAC_PREFIX);
+	memcpy(result_ptr, (unsigned char*) MAC_PREFIX "*", prefix_len+1);
+	result_ptr += prefix_len + 1;
+
+	/*
+	 * If provided (len>0) write the password_id to the result_buffer
+	 */
+	if(password_id_len > 0) {
+		memcpy(result_ptr, password_id, password_id_len);
+		result_ptr += password_id_len;
+	}
+
+	/*
+	 * Add a '*' delimiter.
+	 */
+	*result_ptr = DELIM;
+	result_ptr++;
+
+
 
 	/*
 	 * Encryption salt generation. Because the encryption salt hex will
@@ -272,7 +292,7 @@ CironError ciron_seal(CironContext context, const unsigned char *data,
 	result_ptr += encrypted_base64url.len;
 
 	/*
-	 * With the base64 encoding of the encrypted data the HMAC base sting
+	 * With the base64 encoding of the encrypted data the HMAC base string
 	 * ends and we note its length now.
 	 */
 	hmac_base_chars.chars = result;
@@ -324,7 +344,8 @@ CironError ciron_seal(CironContext context, const unsigned char *data,
 
 	/*
 	 * Now calculate the HMAC. Because the HMAC is not part of the result
-	 * (the base64url version is), we need a buffer to hold the binary.
+	 * (the base64url version is), we need an intermediate buffer to hold the binary.
+	 * from which we generate the base64url encoded directly into the result.
 	 */
 	hmac_bytes.chars = buffer_hmac_bytes;
 	if ((e = ciron_hmac(context, integrity_options->algorithm, password,
@@ -436,6 +457,9 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	 */
 	data_ptr = data;
 	data_remain_len = data_len;
+#if 0
+	TRACE("data_remain_len=%d now prefix\n" _ data_remain_len);
+#endif
 
 	/*
 	 * Parse the prefix and validate.
@@ -451,19 +475,36 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 
 	/* Skip prefix and delimiter */
 	data_ptr += prefix.len + 1;
-	data_remain_len -= prefix.len + 1;
-
+	data_remain_len -= prefix.len;
+	data_remain_len--;
+#if 0
+	TRACE("data_remain_len=%d now password_id\n" _ data_remain_len);
+#endif
 	/*
-	 * Parse password (implementation pending, so currently we expect it to be empty.
+	 * Parse password_id sequence. There
+	 * is no size checking here. it is the responsibility
+	 * of the caller to supply the correct data_len value
+	 * so that we do not read past the end of the sealed
+	 * data.
 	 */
-
-	if ((e = parse_fixed_len(context, data_ptr, data_remain_len, 0,
+	if ((e = parse(context, data_ptr, data_remain_len,
 			&password_id) != CIRON_OK)) {
 		return e;
 	}
+
 	/* Skip password and delimiter */
 	data_ptr += password_id.len + 1;
-	data_remain_len -= password_id.len + 1;
+	data_remain_len -= password_id.len;
+	data_remain_len--;
+#if 0
+	TRACE("data_remain_len=%d now encryption salt\n" _ data_remain_len);
+#endif
+
+
+	/*
+	 * FIXME Here we would need to make sure we find the password by supplied ID in the password table.
+	 */
+
 
 	/*
 	 * Parse encryption salt.
@@ -476,8 +517,11 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 
 	/* Skip salt and delimiter */
 	data_ptr += encryption_salt_hexchars.len + 1;
-	data_remain_len -= encryption_salt_hexchars.len + 1;
-
+	data_remain_len -= encryption_salt_hexchars.len;
+	data_remain_len--;
+#if 0
+	TRACE("data_remain_len=%d now enc IV\n" _ data_remain_len);
+#endif
 	/*
 	 * Parse encryption IV base64url sequence.
 	 */
@@ -485,10 +529,18 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 			&encryption_iv_b64urlchars) != CIRON_OK)) {
 		return e;
 	}
+#if 0
+	TRACE("len=%d\n" _ encryption_iv_b64urlchars.len);
+	TRACE("s=%s\n" _ encryption_iv_b64urlchars.chars);
+#endif
 
 	/* Skip IV base64url and delimiter */
 	data_ptr += encryption_iv_b64urlchars.len + 1;
-	data_remain_len -= encryption_iv_b64urlchars.len + 1;
+	data_remain_len -= encryption_iv_b64urlchars.len;
+	data_remain_len--;
+#if 0
+	TRACE("data_remain_len=%d now 64ofenced data\n" _ data_remain_len);
+#endif
 
 	/*
 	 * Parse encrypted base64url encoded sequence. There
@@ -503,14 +555,19 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	}
 	/* skip encrypted and delimiter */
 	data_ptr += encrypted_data_b64urlchars.len + 1;
-	data_remain_len -= encrypted_data_b64urlchars.len + 1;
+	data_remain_len -= encrypted_data_b64urlchars.len;
+	data_remain_len--;
+#if 0
+	TRACE("data_remain_len=%d now hmac remains with this len\n" _ data_remain_len);
+#endif
 
 	/*
 	 * Now we can set the HMAC base string length. We must
 	 * substract one because we already advanced to the delimiter
 	 * above. And the elimiter is not part of the base string.
 	 */
-	hmac_base_chars.len = data_ptr - data - 1;
+	hmac_base_chars.len = data_ptr - data;
+	hmac_base_chars.len--;
 
 	/*
 	 * Now we parse the integrity salt.
@@ -522,7 +579,11 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	}
 	/* skip salt and delimiter */
 	data_ptr += integrity_salt_hexchars.len + 1;
-	data_remain_len -= (integrity_salt_hexchars.len + 1);
+	data_remain_len -= integrity_salt_hexchars.len;
+	data_remain_len--;
+#if 0
+	TRACE("data_remain_len=%d\n" _ data_remain_len);
+#endif
 
 	/*
 	 * Now we parse the base64url encoded HMAC value.
@@ -531,11 +592,11 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	 */
 	integrity_hmac_b64urlchars.chars = data_ptr;
 	integrity_hmac_b64urlchars.len = data_remain_len;
-	if (integrity_hmac_b64urlchars.len > MAX_IV_B64URL_CHARS) { /* FIXME: why is macro not working? Try it.*/
+	if (integrity_hmac_b64urlchars.len > MAX_IV_B64URL_CHARS) {
 		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
 				CIRON_TOKEN_PARSE_ERROR,
 				"Base64url encoded string of HMAC is too long. Parsed %d bytes, but max is %d",
-				integrity_hmac_b64urlchars.len, 43);
+				integrity_hmac_b64urlchars.len, MAX_IV_B64URL_CHARS);
 	}
 
 	/*

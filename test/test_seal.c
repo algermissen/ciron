@@ -16,6 +16,9 @@ unsigned char sealbuf[MAXBUF];
 const unsigned char password[] = { 's' , 'e' , 'c' , 'r' , 'e' , 't'};
 const int password_len = 6;
 
+const unsigned char password_id[] = { '1','4','8'};
+const int password_id_len = 3;
+
 int test_length_of_sealed() {
 	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
 	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
@@ -23,13 +26,13 @@ int test_length_of_sealed() {
 	int data_len = 4;
 	int result_len;
 
-	if ((ciron_seal(&ctx, data, data_len, password, password_len,
+	if ((ciron_seal(&ctx, data, data_len, password_id , password_id_len, password, password_len,
 			encryption_options, integrity_options, cryptbuf, sealbuf,
 			&result_len)) != CIRON_OK) {
 		fprintf(stderr, "Unable to seal: %s\n", ciron_get_error(&ctx));
 		return 0;
 	}
-	EXPECT_INT_EQUAL(227, result_len);
+	EXPECT_INT_EQUAL(227+password_id_len, result_len);
 
 	return 0;
 }
