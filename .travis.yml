@@ -4,7 +4,7 @@ compiler:
   - clang
 # Change this to your needs
 before_install:
- - sudo apt-get install -qq libmath
+ - sudo apt-get install -qq libssl
 
 script: ./configure && make all && make test
 
