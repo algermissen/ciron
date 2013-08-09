@@ -3,6 +3,9 @@ compiler:
   - gcc
   - clang
 # Change this to your needs
+before_install:
+ - sudo apt-get install -qq libmath
+
 script: ./configure && make all && make test
 
 
