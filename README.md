@@ -43,7 +43,7 @@ ciron has been build and tested in the following environments:
 * MacOS 10.7
 
 
-If you have built ciron on a different environment, please drop me a not so I can
+If you have built ciron on a different environment, please drop me a note so I can
 include that environment in the list above.
 
 
@@ -68,13 +68,7 @@ Security Considerations
 Make sure you read the [security considerations](https://github.com/hueniverse/iron#security-considerations) of iron before using this 
 library.
 
-Please note that this is not yet a production-ready software, primarily because it has not yet been applied in
-a production-like testing environment.
-
-Specifically, there are the following open issues regarding security:
-
-* libcrypto (the OpenSSL library used) is not a trivial piece of software and it is also not documented very clearly. I would like to have at least one OpenSSL expert review my code.
-* I am currently unclear whether I have to apply memory locking inside libciron to prevent the master password from being paged to disk. But
+I am currently unclear whether I have to apply memory locking inside libciron to prevent the master password from being paged to disk. But
 please note that no copy of the incoming master password is made inside the library. (Not sure about libcrypto though)
 
 
