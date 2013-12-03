@@ -129,6 +129,8 @@ When you plan to add features to ciron, please carefully note the following:
 * If you add algorithms, you must check and maybe adjust several buffer size macros in ciron.h and common.h
   These mocros are set the the maximum necessary length of cryptographic elements such as keys possibly used by ciron. Hence, they
   depend on the actual algorithms provided.
+  In addition, you must add new algorithms to the if-cascade in common.c where algorithms
+  are looked up by name.
 
 
 

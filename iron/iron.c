@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
 	 * Check whether the password is actually a password table.
 	 * Process if so.
 	 */
-	if(strstr(password," ") != NULL) {
+	if(strstr((char*)password," ") != NULL) {
 	     char *id, *pwd, *p;
 	     int i = 0;
 	     if(mode == SEAL) {
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 
 	     }
 
-	     for (id = strtok_r(password, " ", &p); id; id = strtok_r(NULL, " ", &p)) {
+	     for (id = strtok_r((char*)password, " ", &p); id; id = strtok_r(NULL, " ", &p)) {
 	    	 pwd_table.entries[i].password_id = (unsigned char*)id;
 	    	 pwd_table.entries[i].password_id_len = strlen(id);
 
@@ -129,6 +129,7 @@ int main(int argc, char **argv) {
 	     }
 	     password = NULL; /* Not needed anymore */
 	     password_len = 0;
+
     	 pwd_table.nentries = i;
     	 if(verbose) {
     		 fprintf(stderr,"Storing id:pwd %s:%s\n" ,pwd_table.entries[i-1].password_id , pwd_table.entries[i-1].password );

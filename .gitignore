@@ -29,3 +29,6 @@ test/data/smallticket.js
 test/data/ticket.js
 
 org.eclipse.core.resources.prefs
+
+.idea
+ciron.iml
