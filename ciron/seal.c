@@ -649,10 +649,12 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	 * Turn incoming base64url encoded HMAC value into binary for comparison.
 	 */
 	incodming_integrity_hmac_bytes.chars = buffer_incoming_integrity_hmac_bytes;
-	ciron_base64url_decode(integrity_hmac_b64urlchars.chars,
+	if( (e = ciron_base64url_decode(context,integrity_hmac_b64urlchars.chars,
 			integrity_hmac_b64urlchars.len,
 			incodming_integrity_hmac_bytes.chars,
-			&(incodming_integrity_hmac_bytes.len));
+			&(incodming_integrity_hmac_bytes.len))) != CIRON_OK) {
+		return e;
+	}
 
 	/*
 	 * Lengths of the HMACs must match, of course.
@@ -691,18 +693,22 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	 * again here using the other macro. Try it -> FIXME. What did I actually mean here?
 	 */
 	encryption_iv_bytes.chars = buffer_encryption_iv_bytes;
-	ciron_base64url_decode(encryption_iv_b64urlchars.chars,
+	if( (e = ciron_base64url_decode(context,encryption_iv_b64urlchars.chars,
 			encryption_iv_b64urlchars.len, encryption_iv_bytes.chars,
-			&(encryption_iv_bytes.len));
+			&(encryption_iv_bytes.len))) != CIRON_OK) {
+		return e;
+	}
 
 	/*
 	 * Turn base64 of encrypted into bytes for decrypting. It is
 	 * caller's responsibility that the buffer is large enough.
 	 */
 	encrypted_bytes.chars = buffer_encrypted_bytes;
-	ciron_base64url_decode(encrypted_data_b64urlchars.chars,
+	if( (e = ciron_base64url_decode(context,encrypted_data_b64urlchars.chars,
 			encrypted_data_b64urlchars.len, encrypted_bytes.chars,
-			&(encrypted_bytes.len));
+			&(encrypted_bytes.len))) != CIRON_OK) {
+		return e;
+	}
 
 	/*
 	 * Decrypt the data.

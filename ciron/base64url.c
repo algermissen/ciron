@@ -35,8 +35,8 @@
 
  #include <stdlib.h>
  */
-
-#include "common.h"  /* for assert */
+#include "base64url.h"
+#include "common.h"
 
 const static unsigned char* b64 =
 		(unsigned char *) "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -117,7 +117,7 @@ unsigned char* ciron_base64url_encode(const unsigned char* data, int data_len,
 	return result;
 }
 
-unsigned char *ciron_base64url_decode(const unsigned char* data, int data_len,
+CironError ciron_base64url_decode(CironContext context, const unsigned char* data, int data_len,
 		unsigned char *result, int *result_len) {
 	int cb = 0;
 	int charNo;
@@ -131,8 +131,8 @@ unsigned char *ciron_base64url_decode(const unsigned char* data, int data_len,
 
 	/* Adapted original code to handle missing padding */
 	if (data_len == 1) {
-		pad = 1;
-		assert(!"len==1 cannot happen");
+                return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
+                                CIRON_BASE64_ERROR, "Base64 URL-encoding cannot yield encoded length of 1");
 	} else if (data_len == 2) {
 		pad = 2;
 		data_len = 4;
@@ -174,5 +174,5 @@ unsigned char *ciron_base64url_decode(const unsigned char* data, int data_len,
 
 	}
 
-	return result;
+	return CIRON_OK;
 }

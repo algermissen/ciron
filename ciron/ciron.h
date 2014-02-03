@@ -38,7 +38,8 @@ typedef enum {
 	CIRON_TOKEN_VALIDATION_ERROR, /* Token cannot be validated */
 	CIRON_PASSWORD_ROTATION_ERROR, /* Password rotation error */
 	CIRON_ERROR_UNKNOWN_ALGORITHM, /* Unknown algorithm */
-	CIRON_CRYPTO_ERROR /* Some unrecognized error in the crypo library ocurred */
+	CIRON_CRYPTO_ERROR, /* Some unrecognized error in the crypo library ocurred */
+	CIRON_BASE64_ERROR /* Unexpected string length or padding in base64 en- or decoding */
 	/* If you add errors here, add them in common.c also */
 } CironError;
 

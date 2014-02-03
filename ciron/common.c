@@ -50,6 +50,7 @@ static const char *error_strings[] = {
 		"Password rotation error" , /* CIRON_PASSWORD_ROTATION_ERROR */
 		"Unknown algorithm", /* CIRON_ERROR_UNKNOWN_ALGORITHM */
 		"Some unrecognized error in the crypto library occurred", /* CIRON_CRYPTO_ERROR */
+		"Unexpected string length or padding in base64 en- or decoding", /* CIRON_BASE64_ERROR */
 		NULL
 };
 

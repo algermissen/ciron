@@ -35,7 +35,7 @@ unsigned char* CIRONAPI ciron_base64url_encode( const unsigned char *data, int d
  *
  * The result will not be \0-terminated.
  */
-unsigned char* CIRONAPI ciron_base64url_decode( const unsigned char *data, int data_len, unsigned char *result, int *result_len );
+CironError CIRONAPI ciron_base64url_decode(CironContext contex, const unsigned char *data, int data_len, unsigned char *result, int *result_len );
 
 #ifdef __cplusplus
 } // extern "C"
