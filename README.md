@@ -8,7 +8,7 @@ Status
 
 ciron has been used for several months in a production environment without issues.
 
-Version 1.2 fixes a finding from a security review and also contains some slight API changes.
+Version 1.3 fixes a finding from a security review and also contains some slight API changes.
 
 Building ciron
 ==============
