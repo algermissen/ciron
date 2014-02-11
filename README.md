@@ -6,12 +6,9 @@ A C implementation of [iron](https://github.com/hueniverse/iron).
 Status
 ======
 
-Until ciron reaches version 1.0 you should not consider it production ready
-without some caution. However, as of version 0.9 ciron is feature complete
-and I have not experienced any bugs so far.
+ciron has been used for several months in a production environment without issues.
 
-I will myself be using ciron to secure a production REST-API over the next few
-weeks so production feedback can be expected and go into version 1.0.
+Version 1.2 fixes a finding from a security review and also contains some slight API changes.
 
 Building ciron
 ==============
@@ -23,7 +20,7 @@ Run the configure script for environment checks and Makefile generation then mak
 
     $ ./configure
     $ make all
-    
+
 This builds a static library in the ciron directory named libciron.a which you
 need to link to your own projects to include ciron. Dynamic linking is not
 provided at this point.
@@ -65,7 +62,7 @@ char arrays.
 Security Considerations
 =======================
 
-Make sure you read the [security considerations](https://github.com/hueniverse/iron#security-considerations) of iron before using this 
+Make sure you read the [security considerations](https://github.com/hueniverse/iron#security-considerations) of iron before using this
 library.
 
 I am currently unclear whether I have to apply memory locking inside libciron to prevent the master password from being paged to disk. But
@@ -92,7 +89,7 @@ Some useful notes about the implementation approach:
 * No internal memory allocation is done inside libciron. (Not sure about the portions of libcrypto that I am using).
 
 Until developer documentation for ciron is ready, please consult the `ciron/ciron.h` header file and the source code
-of the command line utility `iron/iron.c`. These should give you a good explanation as there are really only two 
+of the command line utility `iron/iron.c`. These should give you a good explanation as there are really only two
 core functions: `seal()` and `unseal()`.
 
 
@@ -102,7 +99,7 @@ The iron Command Line Utility
 The iron utility can be used to seal and unseal data on the command line.
 
     $ echo "Data to be kept secret" | iron -p some_password > token
-    
+
     $ cat token | iron -p some_password -u
 
 
@@ -125,7 +122,7 @@ When you plan to add features to ciron, please carefully note the following:
 
 * calculate_encryption_buffer_length() currently hard codes a 16byte cipher block size (which is correct for all CBC algorithms). This should be made dynamic if non-CBC algorithms are used.
   See https://github.com/algermissen/ciron/issues/5
-  
+
 * If you add algorithms, you must check and maybe adjust several buffer size macros in ciron.h and common.h
   These mocros are set the the maximum necessary length of cryptographic elements such as keys possibly used by ciron. Hence, they
   depend on the actual algorithms provided.
