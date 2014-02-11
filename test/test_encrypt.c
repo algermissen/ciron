@@ -4,7 +4,7 @@
 #include "test.h"
 
 const unsigned char PASSWORD[] = { 0x73, 0x65, 0x6B, 0x79, 0x6F, 0x7A, 0x50, 0x5A };
-const int PASSWORD_LEN = 8;
+const size_t PASSWORD_LEN = 8;
 
 #define SALT_NBYTES  32
 #define KEY_NBYTES  32
@@ -18,8 +18,8 @@ struct CironContext ctx;
 int test_encrypt_decrypt() {
 
 	const unsigned char data[] = { 0x44, 0x45, 0x46, 0x47, 0x48 };
-	const int data_len = 5;
-	const int ITERATIONS = 1;
+	const size_t data_len = 5;
+	const size_t ITERATIONS = 1;
 
 	unsigned char salt_chars[SALT_NCHARS_0];
 	unsigned char salt_bytes[SALT_NBYTESx2];
@@ -27,9 +27,9 @@ int test_encrypt_decrypt() {
 	unsigned char iv_bytes[IV_NBYTES];
 
 	unsigned char encrypted_bytes[1024];
-	int encrypted_len;
+	size_t encrypted_len;
 	unsigned char decrypted_bytes[1024];
-	int decrypted_len;
+	size_t decrypted_len;
 
 
 	ciron_generate_salt(&ctx,SALT_NBYTES, salt_chars);

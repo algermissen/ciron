@@ -3,6 +3,7 @@
  * of the OpenSSL library.
  */
 #include <string.h>
+#include <limits.h>
 #include <openssl/rand.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -13,7 +14,7 @@
 
 CironError ciron_encrypt(CironContext context, CironAlgorithm algorithm,
 		const unsigned char *key, const unsigned char *iv,
-		const unsigned char *data, int data_len, unsigned char *buf, int *sizep) {
+		const unsigned char *data, size_t data_len, unsigned char *buf, size_t *sizep) {
 	int r;
 	int n;
 	int n2;
@@ -61,7 +62,7 @@ CironError ciron_encrypt(CironContext context, CironAlgorithm algorithm,
 
 CironError ciron_decrypt(CironContext context, CironAlgorithm algorithm,
 		const unsigned char *key, const unsigned char *iv,
-		const unsigned char *data, int data_len, unsigned char *buf, int *sizep) {
+		const unsigned char *data, size_t data_len, unsigned char *buf, size_t *sizep) {
 	int r;
 	int n;
 	int n2;
@@ -109,9 +110,9 @@ CironError ciron_decrypt(CironContext context, CironAlgorithm algorithm,
 }
 
 CironError ciron_generate_key(CironContext context,
-		const unsigned char* password, int password_len,
-		const unsigned char *salt, int salt_len, CironAlgorithm algorithm,
-		int iterations, unsigned char *buf) {
+		const unsigned char* password, size_t password_len,
+		const unsigned char *salt, size_t salt_len, CironAlgorithm algorithm,
+		size_t iterations, unsigned char *buf) {
 	int keylen;
 	int r;
 
@@ -133,7 +134,7 @@ CironError ciron_generate_key(CironContext context,
 	return CIRON_OK;
 }
 
-CironError ciron_generate_salt(CironContext context, int nbytes,
+CironError ciron_generate_salt(CironContext context, size_t nbytes,
 		unsigned char *buf) {
 	int r;
 	unsigned char salt_bytes[MAX_SALT_BYTES];
@@ -148,7 +149,7 @@ CironError ciron_generate_salt(CironContext context, int nbytes,
 	return CIRON_OK;
 }
 
-CironError ciron_generate_iv(CironContext context, int nbytes,
+CironError ciron_generate_iv(CironContext context, size_t nbytes,
 		unsigned char *buf) {
 	int r;
 	if ((r = RAND_bytes(buf, nbytes)) != 1) {
@@ -160,13 +161,15 @@ CironError ciron_generate_iv(CironContext context, int nbytes,
 }
 
 CironError ciron_hmac(CironContext context, CironAlgorithm algorithm,
-		const unsigned char *password, int password_len,
-		const unsigned char *salt_bytes, int salt_len, int iterations,
-		const unsigned char *data, int data_len, unsigned char *result,
-		int *result_len) {
+		const unsigned char *password, size_t password_len,
+		const unsigned char *salt_bytes, size_t salt_len, size_t iterations,
+		const unsigned char *data, size_t data_len, unsigned char *result,
+		size_t *result_len) {
 	CironError e;
 	unsigned char buffer_key_bytes[MAX_KEY_BYTES];
-	int key_len;
+	size_t key_len;
+	unsigned int rlen;
+
 
 	key_len = NBYTES(algorithm->key_bits);
 	assert(key_len <= MAX_KEY_BYTES);
@@ -178,7 +181,7 @@ CironError ciron_hmac(CironContext context, CironAlgorithm algorithm,
 
 	if (strcmp(algorithm->name, CIRON_SHA_256->name) == 0) {
 		if ((HMAC(EVP_sha256(), buffer_key_bytes, key_len, data, data_len,
-				result, (unsigned int*) result_len)) == NULL ) {
+				result, &rlen)) == NULL ) {
 			return ciron_set_error(context, __FILE__, __LINE__, ERR_get_error(),
 					CIRON_CRYPTO_ERROR, "Unable to calculate HMAC");
 		}
@@ -188,6 +191,8 @@ CironError ciron_hmac(CironContext context, CironAlgorithm algorithm,
 				"Algorithm %s not recognized for HMAC calculation",
 				algorithm->name);
 	}
+	assert(rlen > 0 && rlen < UINT_MAX);
+	*result_len = (size_t)rlen;
 	return CIRON_OK;
 }
 

@@ -97,16 +97,16 @@ extern "C" {
  */
 struct CironAlgorithm {
 	const char* name;
-	int key_bits;
-	int iv_bits;
+	unsigned int key_bits;
+	unsigned int iv_bits;
 };
 
 /** Structure for the Options typedef in ciron.h
  */
 struct CironOptions {
-	int salt_bits;
+	size_t salt_bits;
 	CironAlgorithm algorithm;
-	int iterations;
+	unsigned int iterations;
 };
 
 
@@ -116,6 +116,8 @@ struct CironOptions {
  *
  */
 #define NO_CRYPTO_ERROR 0
+
+
 
 /**
  * Set the context error for error retrieval by the caller.
@@ -133,13 +135,13 @@ CironError CIRONAPI ciron_set_error(CironContext ctx, const char *file, int line
  *
  * Does not \0 terminate the created string.
  */
-void CIRONAPI ciron_bytes_to_hex(const unsigned char *bytes, int len, unsigned char *buf);
+void CIRONAPI ciron_bytes_to_hex(const unsigned char *bytes, size_t len, unsigned char *buf);
 
-/** Fixed time byte-wise comparision.
+/** Fixed time byte-wise comparison.
  *
  * Return 1 if the supplied byte sequences are byte-wise equal, 0 otherwise.
  */
-int ciron_fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len);
+int ciron_fixed_time_equal(unsigned char *lhs, unsigned char * rhs, size_t len);
 
 
 /** The remainder of this header file defines utilities for
@@ -147,7 +149,7 @@ int ciron_fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len);
  * debugging.
  */
 
-int CIRONAPI ciron_trace_bytes(const char *name, const unsigned char *bytes, int len);
+int CIRONAPI ciron_trace_bytes(const char *name, const unsigned char *bytes, size_t len);
 
 #ifndef NDEBUG
 #  undef _
@@ -185,4 +187,4 @@ void CIRONAPI ciron_assert(const char*,const char *,unsigned);
 
 
 #endif /* !defined CIRON_COMMON_H */
- 
+

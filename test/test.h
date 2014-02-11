@@ -16,6 +16,7 @@ extern "C" {
 
 #define EXPECT_BYTE_EQUAL(a,b,n) do { if( memcmp((a) , (b) , (n) ) != 0 ) { printf("Test failed in %s line %d: \n", __FILE__ , __LINE__ ); return 1; } } while(0)
 #define EXPECT_INT_EQUAL(a,b) do { if( (a) != (b) ) { printf("Test failed in %s line %d: expected %d but got %d\n", __FILE__ , __LINE__,(a),(b) ); return 1; } } while(0)
+#define EXPECT_SIZE_T_EQUAL(a,b) do { if( (a) != (b) ) { printf("Test failed in %s line %d: expected %zu but got %zu\n", __FILE__ , __LINE__,(a),(b) ); return 1; } } while(0)
 
 
 #ifdef __cplusplus

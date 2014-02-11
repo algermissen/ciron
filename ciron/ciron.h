@@ -6,6 +6,7 @@
  */
 #ifndef CIRON_H
 #define CIRON_H 1
+#include <unistd.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +31,7 @@ extern CironOptions CIRON_DEFAULT_INTEGRITY_OPTIONS;
 
 
 /** ciron error codes
- * 
+ *
  */
 typedef enum {
 	CIRON_OK, /* no error */
@@ -39,7 +40,8 @@ typedef enum {
 	CIRON_PASSWORD_ROTATION_ERROR, /* Password rotation error */
 	CIRON_ERROR_UNKNOWN_ALGORITHM, /* Unknown algorithm */
 	CIRON_CRYPTO_ERROR, /* Some unrecognized error in the crypo library ocurred */
-	CIRON_BASE64_ERROR /* Unexpected string length or padding in base64 en- or decoding */
+	CIRON_BASE64_ERROR, /* Unexpected string length or padding in base64 en- or decoding */
+	CIRON_OVERFLOW_ERROR /* Unexpected number value would cause integer overflow */
 	/* If you add errors here, add them in common.c also */
 } CironError;
 
@@ -53,14 +55,26 @@ const char* CIRONAPI ciron_strerror(CironError e);
 /** A handle for passing information between calls to ciron functions.
  *
  * Primarily used for propagating errors up the call-chain.
- * 
+ *
  * The struct is exposed so that API users can declare a local
- * variable of type 'struct CironContext' instead of having 
- * to allocate (and manage freeing) one. Althogh the exposure
+ * variable of type 'struct CironContext' instead of having
+ * to allocate (and manage freeing) one. Although the exposure
  * makes it possible to access the fields directly, you
  * should use the accessor functions below.
+ *
+ * You must initialize a context to set the encryption and integrity
+ * options:
+ *
+ * struct CironContext ctx;
+ *
+ * ciron_context_init(&ctx,CIRON_DEFAULT_ENCRYPTION_OPTIONS,CIRON_DEFAULT_INTEGRITY_OPTIONS);
+ *
  */
 typedef struct CironContext {
+    /** Options to use for encryption */
+    CironOptions encryption_options;
+    /** Options to use for integrity */
+    CironOptions integrity_options;
 	/** Ciron error code */
 	CironError error;
 	/** Error message providing specific error condition details */
@@ -69,21 +83,26 @@ typedef struct CironContext {
 	unsigned long crypto_error;
 } *CironContext;
 
+
 /*
  * Entry structure for password_id/password tables to support password rotation.
  */
 typedef struct CironPwdTableEntry {
-	int password_id_len;
-	int password_len;
+	size_t password_id_len;
+	size_t password_len;
 	unsigned char *password_id;
 	unsigned char *password;
 } *CironPwdTableEntry;
 
 typedef struct CironPwdTable {
-	int nentries;
+	unsigned int nentries;
 	struct CironPwdTableEntry *entries;
 } *CironPwdTable;
 
+/**
+ * Initalize a CironContext with the given options
+ */
+void CIRONAPI ciron_context_init(CironContext ctx, CironOptions encryption_options, CironOptions integrity_options);
 
 /** Get a human readable message about the last error
  * condition that ocurred for the given context.
@@ -111,20 +130,21 @@ unsigned long CIRONAPI ciron_get_crypto_error(CironContext ctx);
  * required.
  *
  * ciron requires API users to provide the encryption buffer in
- * order to avoid memory allocations inside the API functions. 
- * 
+ * order to avoid memory allocations inside the API functions.
+ *
  * For encryption algorithms that use block ciphers (all of
  * the algorithms of ciron currently are of this category) the
  * encryption buffer will be at most one block size larger
  * than the data to be encrypted.
  *
- * The reason that there is no corresponding method for 
+ * The reason that there is no corresponding method for
  * calculating the size of the decryption buffer is that
  * the size calculated by calculate_encryption_buffer_length
  * is suitable for both contexts.
  *
  */
-int CIRONAPI ciron_calculate_encryption_buffer_length(CironOptions encryption_options, int data_len);
+CironError CIRONAPI ciron_calculate_encryption_buffer_length(CironContext context,
+        size_t data_len, size_t *result_len);
 
 /** Calculate the buffer size needed to store the sealed result
  * of unsealed data of the supplied length.
@@ -137,20 +157,34 @@ int CIRONAPI ciron_calculate_encryption_buffer_length(CironOptions encryption_op
  * encapsulated token. Increase of the result size will be
  * in multiples of the cipher block size.
  *
+ * The function will return CIRON_OK on success and CIRON_OVERFLOW_ERROR
+ * if a potential integer overflow was detected (and prevented). This
+ * prevents against attacks with large data sizes.
+ *
  */
-int CIRONAPI ciron_calculate_seal_buffer_length(CironOptions encryption_options, CironOptions integrity_options,int data_len, int password_id_len);
+CironError CIRONAPI ciron_calculate_seal_buffer_length(CironContext context,
+        		size_t data_len, size_t password_id_len, size_t *result_len);
 
 /** Calculate the buffer size needed to store the unsealed
  * result of sealed data of the supplied length.
  *
  * This works much like the corresponding function above for
  * calculating seal result buffer size. The difference is that
- * this function substracts the lengths of the individual
+ * this function subtracts the lengths of the individual
  * token components until the size of the unencrypted,
  * unsealed data remains.
  *
+ * Note: If the token contains a password, the calculated buffer size will be by that amount of
+ * bytes larger because we ignore the password length when subtracting (otherwise we would have to
+ * know the password length up front - which we do not.
+ *
+ * The function will return CIRON_OK on success and CIRON_OVERFLOW_ERROR
+ * if a potential integer overflow was detected (and prevented). This
+ * prevents against attacks with large data sizes.
+ *
  */
-int CIRONAPI ciron_calculate_unseal_buffer_length(CironOptions encryption_options, CironOptions integrity_options,int data_len, int password_id_len);
+CironError CIRONAPI ciron_calculate_unseal_buffer_length(CironContext context, size_t data_len, size_t *result_len);
+
 
 /** Seal the supplied data.
  *
@@ -167,8 +201,6 @@ int CIRONAPI ciron_calculate_unseal_buffer_length(CironOptions encryption_option
  *   to prevent the password memory from being paged to disk, you
  *   need not be concerned about the internals of ciron.
  * - password_len: The length of the password.
- * - encryption_options: Options to use for encryption phase.
- * - integrity_options: Options to use for ensuring integrity.
  * - buffer_encrypted_bytes: Buffer of sufficient size to store
  *   the encrypted form of the supplied data. ciron provides
  *   the function 'calculate_encryption_buffer_length()' for
@@ -179,9 +211,9 @@ int CIRONAPI ciron_calculate_unseal_buffer_length(CironOptions encryption_option
  * - plen: Pointer to an integer in which ciron will
  *   store the actual length of the generated encapsulated token.
  */
-CironError CIRONAPI ciron_seal(CironContext ctx,const unsigned char *data, int data_len, const unsigned char* password_id,
-		int password_id_len,const unsigned char* password,
-		int password_len, CironOptions encryption_options, CironOptions integrity_options, unsigned char *buffer_encrypted_bytes, unsigned char *buf, int *plen);
+CironError CIRONAPI ciron_seal(CironContext ctx,const unsigned char *data, size_t data_len, const unsigned char* password_id,
+		size_t password_id_len,const unsigned char* password,
+		size_t password_len, unsigned char *buffer_encrypted_bytes, unsigned char *buf, size_t *plen);
 
 /** Unseal the supplied data.
  *
@@ -197,8 +229,6 @@ CironError CIRONAPI ciron_seal(CironContext ctx,const unsigned char *data, int d
  *   to prevent the password memory from being paged to disk, you
  *   need not be concerned about the internals of ciron.
  * - password_len: The length of the password.
- * - encryption_options: Options to use for encryption phase.
- * - integrity_options: Options to use for ensuring integrity.
  * - buffer_encrypted_bytes: Buffer of sufficient size to store
  *   the encrypted form of the encrypted data. ciron provides
  *   the function 'calculate_encryption_buffer_length()' for
@@ -214,10 +244,10 @@ CironError CIRONAPI ciron_seal(CironContext ctx,const unsigned char *data, int d
  * cannot be encrypted.
  */
 
-CironError CIRONAPI ciron_unseal(CironContext ctx,const unsigned char *data, int data_len,
+CironError CIRONAPI ciron_unseal(CironContext ctx,const unsigned char *data, size_t data_len,
 		CironPwdTable pwd_table,
-		const unsigned char* password, int password_len, CironOptions encryption_options,
-		CironOptions integrity_options, unsigned char *buffer_encrypted_bytes,unsigned char *result, int *plen);
+		const unsigned char* password, size_t password_len,
+		unsigned char *buffer_encrypted_bytes,unsigned char *result, size_t *plen);
 
 
 

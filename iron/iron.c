@@ -24,18 +24,18 @@ int main(int argc, char **argv) {
 
 	int verbose = 0;
 	unsigned char *password = NULL;
-	int password_len = 0;
+	size_t password_len = 0;
 
 	unsigned char *password_id = NULL;
-	int password_id_len = 0;
+	size_t password_id_len = 0;
 
 	unsigned char *input;
-	int input_len = 1;
+	size_t input_len = 1;
 	unsigned char *encryption_buffer;
 	unsigned char *output_buffer;
-	int encryption_buffer_len;
-	int output_buffer_len;
-	int output_len;
+	size_t encryption_buffer_len;
+	size_t output_buffer_len;
+	size_t output_len;
 
 	unsigned char buffer[BUF_SIZE];
 
@@ -44,10 +44,11 @@ int main(int argc, char **argv) {
 
 	int option;
 	seal_t mode = SEAL;
-	CironOptions encryption_options = CIRON_DEFAULT_ENCRYPTION_OPTIONS;
-	CironOptions integrity_options = CIRON_DEFAULT_INTEGRITY_OPTIONS;
 
 	struct CironContext ctx;
+	CironError e;
+
+	ciron_context_init(&ctx,CIRON_DEFAULT_ENCRYPTION_OPTIONS,CIRON_DEFAULT_INTEGRITY_OPTIONS);
 
 	pwd_table.entries = pwd_table_entries;
 	pwd_table.nentries = 0;
@@ -105,7 +106,7 @@ int main(int argc, char **argv) {
 	 */
 	if(strstr((char*)password," ") != NULL) {
 	     char *id, *pwd, *p;
-	     int i = 0;
+	     size_t i = 0;
 	     if(mode == SEAL) {
 	    		 fprintf(stderr,"Seal mode requires password instead of table\n");
 	    		 usage();
@@ -153,7 +154,7 @@ int main(int argc, char **argv) {
 		strcat((char*)input, (char*)buffer);
 	}
 	if(verbose) {
-		fprintf(stderr,"Read %d bytes of input\n", input_len);
+		fprintf(stderr,"Read %zu bytes of input\n", input_len);
 	}
 	/* Input len includes the \0 and we do not want to seal that */
 	input_len--;
@@ -164,14 +165,17 @@ int main(int argc, char **argv) {
 	 * string. ciron provides a function to calculate the buffer size from the
 	 * input data size.
 	 */
-	encryption_buffer_len = ciron_calculate_encryption_buffer_length(encryption_options, input_len);
+	if( (e = ciron_calculate_encryption_buffer_length(&ctx, input_len,&encryption_buffer_len)) != CIRON_OK) {
+        fprintf(stderr,"Error when calculating encryption_buffer_length: %s\n"  , ciron_get_error(&ctx));
+        exit(1);
+	}
 	if( (encryption_buffer = malloc(encryption_buffer_len)) == NULL) {
 		perror("Unable to allocate encryption buffer");
 		exit(7);
 	}
 
 	if(verbose) {
-		fprintf(stderr,"Allocated %d bytes for encryption buffer\n", encryption_buffer_len);
+		fprintf(stderr,"Allocated %zu bytes for encryption buffer\n", encryption_buffer_len);
 	}
 
 
@@ -181,14 +185,16 @@ int main(int argc, char **argv) {
 	 * input data size.
 	 */
 	if (mode == SEAL) {
+		ciron_calculate_seal_buffer_length(&ctx, input_len,password_id_len,&output_buffer_len);
 		/* We add 1 byte because we want to \0-terminate the buffer */
-		output_buffer_len = ciron_calculate_seal_buffer_length(encryption_options, integrity_options, input_len,password_id_len) + 1;
+		output_buffer_len++;
 	} else {
+		ciron_calculate_unseal_buffer_length(&ctx, input_len,&output_buffer_len);
 		/* We add 1 byte because we want to \0-terminate the buffer */
-		output_buffer_len = ciron_calculate_unseal_buffer_length(encryption_options, integrity_options, input_len,password_id_len) + 1;
+		output_buffer_len++;
 	}
 	if(verbose) {
-			fprintf(stderr,"Will allocate %d bytes for output buffer\n", output_buffer_len);
+			fprintf(stderr,"Will allocate %zu bytes for output buffer\n", output_buffer_len);
 	}
 
 	if( (output_buffer = malloc(output_buffer_len)) == NULL) {
@@ -197,7 +203,7 @@ int main(int argc, char **argv) {
 	}
 
 	if(verbose) {
-		fprintf(stderr,"Allocated %d bytes for output buffer\n", output_buffer_len);
+		fprintf(stderr,"Allocated %zu bytes for output buffer\n", output_buffer_len);
 	}
 
 	if (mode == SEAL) {
@@ -205,7 +211,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "%s", password);
 		*/
 		if( (ciron_seal(&ctx,input, input_len, password_id,password_id_len,password, password_len,
-				encryption_options, integrity_options, encryption_buffer,
+				encryption_buffer,
 				output_buffer, &output_len)) != CIRON_OK) {
 			fprintf(stderr,"Unable to seal: %s\n" , ciron_get_error(&ctx));
 			exit(9);
@@ -216,7 +222,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "(%s)", input);
 		*/
 		if( (e =ciron_unseal(&ctx,input, input_len, &pwd_table,password, password_len,
-				encryption_options, integrity_options, encryption_buffer,
+				encryption_buffer,
 				output_buffer, &output_len)) != CIRON_OK) {
 			if(e == CIRON_TOKEN_PARSE_ERROR) {
 				fprintf(stderr,"Invalid token format, %s\n" , ciron_get_error(&ctx));
@@ -228,7 +234,7 @@ int main(int argc, char **argv) {
 		}
 	}
 	if(verbose) {
-		fprintf(stderr,"%s produced %d bytes of output\n", (mode == SEAL) ? "Sealing" : "Unsealing" , output_len);
+		fprintf(stderr,"%s produced %zu bytes of output\n", (mode == SEAL) ? "Sealing" : "Unsealing" , output_len);
 	}
 	output_buffer[output_len] = '\0';
 

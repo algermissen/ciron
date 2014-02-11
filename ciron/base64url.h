@@ -21,7 +21,7 @@ extern "C" {
  *
  * The result will not be \0-terminated.
  */
-unsigned char* CIRONAPI ciron_base64url_encode( const unsigned char *data, int data_len, unsigned char *resurl, int *result_len );
+unsigned char* CIRONAPI ciron_base64url_encode( const unsigned char *data, size_t data_len, unsigned char *resurl, size_t *result_len );
 
 /** Base64url decode the given data.
  *
@@ -35,7 +35,7 @@ unsigned char* CIRONAPI ciron_base64url_encode( const unsigned char *data, int d
  *
  * The result will not be \0-terminated.
  */
-CironError CIRONAPI ciron_base64url_decode(CironContext contex, const unsigned char *data, int data_len, unsigned char *result, int *result_len );
+CironError CIRONAPI ciron_base64url_decode(CironContext contex, const unsigned char *data, size_t data_len, unsigned char *result, size_t *result_len );
 
 #ifdef __cplusplus
 } // extern "C"

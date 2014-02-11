@@ -51,8 +51,15 @@ static const char *error_strings[] = {
 		"Unknown algorithm", /* CIRON_ERROR_UNKNOWN_ALGORITHM */
 		"Some unrecognized error in the crypto library occurred", /* CIRON_CRYPTO_ERROR */
 		"Unexpected string length or padding in base64 en- or decoding", /* CIRON_BASE64_ERROR */
+		"Unexpected number value would cause integer overflow", /* CIRON_OVERFLOW_ERROR */
 		NULL
 };
+
+void ciron_context_init(CironContext ctx, CironOptions encryption_options, CironOptions integrity_options) {
+    memset(ctx,0,sizeof(struct CironContext));
+    ctx->encryption_options = encryption_options;
+    ctx->integrity_options = integrity_options;
+}
 
 const char* ciron_strerror(CironError e) {
 	assert(e >= 0 && e <= 0);
@@ -90,10 +97,10 @@ CironError ciron_get_error_code(CironContext ctx) {
 /* Lookup 'table' for hex encoding */
 static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 		'a', 'b', 'c', 'd', 'e', 'f' };
-void ciron_bytes_to_hex(const unsigned char *bytes, int len, unsigned char *buf) {
-	int j;
+void ciron_bytes_to_hex(const unsigned char *bytes, size_t len, unsigned char *buf) {
+	size_t j;
 	for (j = 0; j < len; j++) {
-		int v;
+		size_t v;
 		v = bytes[j] & 0xFF;
 		buf[j * 2] = hex[v >> 4];
 		buf[j * 2 + 1] = hex[v & 0x0F];
@@ -102,10 +109,10 @@ void ciron_bytes_to_hex(const unsigned char *bytes, int len, unsigned char *buf)
 
 
 
-int ciron_fixed_time_equal(unsigned char *lhs, unsigned char * rhs, int len) {
+int ciron_fixed_time_equal(unsigned char *lhs, unsigned char * rhs, size_t len) {
 
 	int equal = 1;
-	int i;
+	size_t i;
 	for(i = 0; i<len;i++) {
 		if(lhs[i] != rhs[i]) {
 			equal = 0;
@@ -129,8 +136,8 @@ int ciron_trace(const char * fmt, ...) {
 	return 0;
 }
 
-int ciron_trace_bytes(const char *name, const unsigned char *bytes, int len) {
-	int i;
+int ciron_trace_bytes(const char *name, const unsigned char *bytes, size_t len) {
+	size_t i;
 	fprintf(stderr, "Byte array %s: ", name);
 	for (i = 0; i < len; i++) {
 		fprintf(stderr, "%s0x%02x", (i == 0) ? "" : ",", bytes[i]);

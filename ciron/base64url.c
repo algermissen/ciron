@@ -72,18 +72,18 @@ const static unsigned char unb64[]={
 }; /* This array has 255 elements */
 
 
-unsigned char* ciron_base64url_encode(const unsigned char* data, int data_len,
-		unsigned char *result, int *result_len) {
+unsigned char* ciron_base64url_encode(const unsigned char* data, size_t data_len,
+		unsigned char *result, size_t *result_len) {
 
-	int rc = 0; /* result counter */
-	int byteNo; /* I need this after the loop */
+	size_t rc = 0; /* result counter */
+	size_t byteNo; /* I need this after the loop */
 
-	int modulusLen = data_len % 3;
-	int pad = ((modulusLen & 1) << 1) + ((modulusLen & 2) >> 1); /* 2 gives 1 and 1 gives 2, but 0 gives 0. */
+	size_t modulusLen = data_len % 3;
+	size_t pad = ((modulusLen & 1) << 1) + ((modulusLen & 2) >> 1); /* 2 gives 1 and 1 gives 2, but 0 gives 0. */
 
 	*result_len = 4 * (data_len + pad) / 3;
 
-	for (byteNo = 0; byteNo <= data_len - 3; byteNo += 3) {
+	for (byteNo = 0; byteNo+3 <= data_len; byteNo += 3) {
 		unsigned char BYTE0 = data[byteNo];
 		unsigned char BYTE1 = data[byteNo + 1];
 		unsigned char BYTE2 = data[byteNo + 2];
@@ -117,11 +117,11 @@ unsigned char* ciron_base64url_encode(const unsigned char* data, int data_len,
 	return result;
 }
 
-CironError ciron_base64url_decode(CironContext context, const unsigned char* data, int data_len,
-		unsigned char *result, int *result_len) {
-	int cb = 0;
-	int charNo;
-	int pad = 0;
+CironError ciron_base64url_decode(CironContext context, const unsigned char* data, size_t data_len,
+		unsigned char *result, size_t *result_len) {
+	size_t cb = 0;
+	size_t charNo;
+	size_t pad = 0;
 
 	/* Removed from original code because we do not use padding.
 	 if( safeAsciiPtr[ len-1 ]=='=' )  ++pad ;
@@ -147,28 +147,30 @@ CironError ciron_base64url_decode(CironContext context, const unsigned char* dat
 	}
 
 	*result_len = 3 * data_len / 4 - pad;
-
+#if 0
 	for (charNo = 0; charNo <= data_len - 4 - pad; charNo += 4) {
-		int A = unb64[data[charNo]];
-		int B = unb64[data[charNo + 1]];
-		int C = unb64[data[charNo + 2]];
-		int D = unb64[data[charNo + 3]];
+#endif
+	for (charNo = 0; charNo + 4 + pad <= data_len; charNo += 4) {
+		size_t A = unb64[data[charNo]];
+		size_t B = unb64[data[charNo + 1]];
+		size_t C = unb64[data[charNo + 2]];
+		size_t D = unb64[data[charNo + 3]];
 
 		result[cb++] = (A << 2) | (B >> 4);
 		result[cb++] = (B << 4) | (C >> 2);
 		result[cb++] = (C << 6) | (D);
 	}
 	if (pad == 1) {
-		int A = unb64[data[charNo]];
-		int B = unb64[data[charNo + 1]];
-		int C = unb64[data[charNo + 2]];
+		size_t A = unb64[data[charNo]];
+		size_t B = unb64[data[charNo + 1]];
+		size_t C = unb64[data[charNo + 2]];
 
 		result[cb++] = (A << 2) | (B >> 4);
 		result[cb++] = (B << 4) | (C >> 2);
 
 	} else if (pad == 2) {
-		int A = unb64[data[charNo]];
-		int B = unb64[data[charNo + 1]];
+		size_t A = unb64[data[charNo]];
+		size_t B = unb64[data[charNo + 1]];
 
 		result[cb++] = (A << 2) | (B >> 4);
 

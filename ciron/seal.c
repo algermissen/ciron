@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <limits.h>
 #include "ciron.h"
 #include "common.h"
 #include "crypto.h"
@@ -16,12 +17,12 @@
  */
 struct const_chars_and_len {
 	const unsigned char *chars;
-	int len;
+	size_t len;
 };
 
 struct chars_and_len {
 	unsigned char *chars;
-	int len;
+	size_t len;
 };
 
 /*
@@ -37,20 +38,38 @@ struct chars_and_len {
  * found.
  */
 static CironError parse(CironContext context, const unsigned char *data,
-		int len, struct const_chars_and_len *balp);
+		size_t len, struct const_chars_and_len *balp);
 
 /* Variants of parse. Not sure whether that is truely needed, but I want to limit possible attack vectors */
 static CironError parse_fixed_len(CironContext context,
-		const unsigned char *data, int len, int expected_len,
+		const unsigned char *data, size_t len, size_t expected_len,
 		struct const_chars_and_len *balp);
 static CironError parse_max_len(CironContext context, const unsigned char *data,
-		int len, int max_len, struct const_chars_and_len *balp);
+		size_t len, size_t max_len, struct const_chars_and_len *balp);
 
-int ciron_calculate_encryption_buffer_length(CironOptions encryption_options, int data_len) {
+
+
+CironError ciron_calculate_encryption_buffer_length(CironContext context, size_t data_len, size_t *result_len) {
 	/* for all CBC. But see https://github.com/algermissen/ciron/issues/5 */
-	int cipher_block_size = CIPHER_BLOCK_SIZE;
+	size_t cipher_block_size = CIPHER_BLOCK_SIZE;
+
+	/* Below we calculate the encryption buffer length as
+ 	 * data_len + cipher_block_size - (data_len % cipher_block_size)
+	 * To avoid integer overflow the following needs consideration:
+	 *
+	 * data_len % cipher_block_size can be at most cipher_block_size-1
+ 	 * which means that we are going to add at most 2*cipher_block_size - 1
+	 * to data_len. So we need to check that data_len is at least 2 x
+	 * cipher_block_size less than UINT_MAX to avoid overflow.
+	 */
+	if(UINT_MAX - data_len < 2 * cipher_block_size) {
+		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
+				CIRON_OVERFLOW_ERROR, "Cannot unseal a buffer of size %ud due to integer overflow");
+	}
+
 	/* Taken from http://www.obviex.com/articles/ciphertextsize.aspx */
-	return data_len + cipher_block_size - (data_len % cipher_block_size);
+	*result_len = data_len + cipher_block_size - (data_len % cipher_block_size);
+	return CIRON_OK;
 }
 
 /*
@@ -59,45 +78,58 @@ int ciron_calculate_encryption_buffer_length(CironOptions encryption_options, in
  * the calculations.
  */
 
-int ciron_calculate_seal_buffer_length(CironOptions encryption_options,
-		CironOptions integrity_options,int data_len, int password_id_len) {
+CironError ciron_calculate_seal_buffer_length(CironContext context,  size_t data_len, size_t password_id_len, size_t *result_len) {
 
-	int len = 6; /* MAC_PREFIIX */
+    CironError e;
+	size_t encryption_buffer_length;
+	if( (e = ciron_calculate_encryption_buffer_length(context, data_len,&encryption_buffer_length)) != CIRON_OK) {
+	   return e;
+	}
+
+	size_t len = 6; /* MAC_PREFIIX */
 	len++; /* delimiter */
 	len += password_id_len;
 	len++; /* delimiter */
-	len = len + (NBYTES(encryption_options->salt_bits) * 2); /* Encryption salt (NBYTES * 2 due to hex encoding) */
+	len = len + (NBYTES(context->encryption_options->salt_bits) * 2); /* Encryption salt (NBYTES * 2 due to hex encoding) */
 	len++; /* delimiter */
-	len += BASE64URL_ENCODE_SIZE(NBYTES(encryption_options->algorithm->iv_bits)); /* Base64url encoded IV */
+	len += BASE64URL_ENCODE_SIZE(NBYTES(context->encryption_options->algorithm->iv_bits)); /* Base64url encoded IV */
 	len++; /* delimiter */
-	len += BASE64URL_ENCODE_SIZE( ciron_calculate_encryption_buffer_length(encryption_options, data_len)); /* Base64url encoded encrypted data */
+	len += BASE64URL_ENCODE_SIZE(encryption_buffer_length); /* Base64url encoded encrypted data */
 	len++; /* delimiter */
-	len += NBYTES(integrity_options->salt_bits) * 2; /* Integrity salt (NBYTES * 2 due to hex encoding) */
+	len += NBYTES(context->integrity_options->salt_bits) * 2; /* Integrity salt (NBYTES * 2 due to hex encoding) */
 	len++; /* delimiter */
 	len += BASE64URL_ENCODE_SIZE(32); /* Base64url encoded HMAC (for HMAC SHA256 HMAC size is 32 bytes)  */
 	/* see https://github.com/algermissen/ciron/issues/13 */
-	return len;
+	*result_len = len;
+	return CIRON_OK;
 }
 
 /*
  * Explanation of what is going on here is in ciron.h
  */
-int ciron_calculate_unseal_buffer_length(CironOptions encryption_options,
-		CironOptions integrity_options, int data_len, int password_id_len) {
+CironError ciron_calculate_unseal_buffer_length(CironContext context, size_t data_len, size_t *result_len) {
 
-	int len = data_len;
+    int len;
+    if(data_len > INT_MAX) {
+        return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
+    					CIRON_OVERFLOW_ERROR, "Data len %zu exceeds INT_MAX", data_len);
+    }
+
+	len = data_len;
 
 	len -= 6; /* MAC_PREFIIX */
 	len--; /* delimiter */
-	len -= password_id_len;
+	/* We do not know password length when unsealing hence ignore it. If password is present, the calculated */
+	/* buffer size will be this amount larger - which isn't a problem. */
+	/* This fixes https://github.com/algermissen/ciron/issues/15 */
 	len--; /* delimiter */
-	len -= (NBYTES(encryption_options->salt_bits) * 2); /* Encryption salt (NBYTES * 2 due to hex encoding) */
+	len -= (NBYTES(context->encryption_options->salt_bits) * 2); /* Encryption salt (NBYTES * 2 due to hex encoding) */
 	len--; /* delimiter */
-	len -= BASE64URL_ENCODE_SIZE(NBYTES(encryption_options->algorithm->iv_bits)); /* Base64url encoded IV */
+	len -= BASE64URL_ENCODE_SIZE(NBYTES(context->encryption_options->algorithm->iv_bits)); /* Base64url encoded IV */
 	len--; /* delimiter */
 	/* We do not substract encryption size because this is what remains in the end and is the result */
 	len--; /* delimiter */
-	len -= (NBYTES(integrity_options->salt_bits) * 2); /* Integrity salt (NBYTES * 2 due to hex encoding) */
+	len -= (NBYTES(context->integrity_options->salt_bits) * 2); /* Integrity salt (NBYTES * 2 due to hex encoding) */
 	len--; /* delimiter */
 	len -= BASE64URL_ENCODE_SIZE(32); /* Base64url encoded HMAC (for HMAC SHA256 HMAC size is 32 bytes) */
 	/* see https://github.com/algermissen/ciron/issues/13 */
@@ -109,19 +141,24 @@ int ciron_calculate_unseal_buffer_length(CironOptions encryption_options,
 
 	/* Protect us against too small initial values. We cannot be less than 0 */
 	if (len < 0) {
-		return 0;	
+        return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
+    					CIRON_OVERFLOW_ERROR, "Data len %zu too small", data_len);
 	}
-	return len;
+	*result_len = len;
+	return CIRON_OK;
 }
 
 CironError ciron_seal(CironContext context, const unsigned char *data,
-		int data_len, const unsigned char* password_id, int password_id_len,
-		const unsigned char* password, int password_len,
-		CironOptions encryption_options, CironOptions integrity_options,
-		unsigned char *buffer_encrypted_bytes, unsigned char *result, int *plen) {
+		size_t data_len, const unsigned char* password_id, size_t password_id_len,
+		const unsigned char* password, size_t password_len,
+		unsigned char *buffer_encrypted_bytes, unsigned char *result, size_t *plen) {
+
+    CironOptions encryption_options;
+    CironOptions integrity_options;
+
 
 	CironError e;
-	int prefix_len;
+	size_t prefix_len;
 	/*
 	 *  These are local buffers to hold data that is pointed to by the xxx_and_len structs
 	 */
@@ -153,6 +190,9 @@ CironError ciron_seal(CironContext context, const unsigned char *data,
 	 * This maintains position while filling the result buffer.
 	 */
 	unsigned char *result_ptr;
+
+	encryption_options = context->encryption_options;
+	integrity_options = context->integrity_options;
 
 	/*
 	 * Calculate number of salt bytes from provided options and
@@ -380,12 +420,13 @@ CironError ciron_seal(CironContext context, const unsigned char *data,
 }
 
 CironError ciron_unseal(CironContext context, const unsigned char *data,
-		int data_len, CironPwdTable pwd_table, const unsigned char* password, int password_len,
-		CironOptions encryption_options, CironOptions integrity_options,
-		unsigned char *buffer_encrypted_bytes, unsigned char *result, int *plen) {
+		size_t data_len, CironPwdTable pwd_table, const unsigned char* password, size_t password_len,
+		unsigned char *buffer_encrypted_bytes, unsigned char *result, size_t *plen) {
+	CironOptions encryption_options;
+	CironOptions integrity_options;
 
 	CironError e;
-	int i;
+	size_t i;
 	int found_password;
 
 	/*
@@ -430,7 +471,11 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 	 * These maintain parsing position when extracting fields from incoming data
 	 */
 	const unsigned char *data_ptr;
-	int data_remain_len;
+	size_t data_remain_len;
+
+	encryption_options = context->encryption_options;
+    integrity_options = context->integrity_options;
+
 
 	/*
 	 * Calculate number of salt bytes from provided options and
@@ -727,8 +772,8 @@ CironError ciron_unseal(CironContext context, const unsigned char *data,
 }
 
 static CironError parse(CironContext context, const unsigned char *data,
-		int len, struct const_chars_and_len *balp) {
-	int pos = 0;
+		size_t len, struct const_chars_and_len *balp) {
+	size_t pos = 0;
 	balp->chars = data;
 
 	while (pos < len) {
@@ -744,9 +789,9 @@ static CironError parse(CironContext context, const unsigned char *data,
 			"End of char sequence reached before finding delimiter");
 }
 static CironError parse_fixed_len(CironContext context,
-		const unsigned char *data, int len, int expected_len,
+		const unsigned char *data, size_t len, size_t expected_len,
 		struct const_chars_and_len *balp) {
-	int pos = 0;
+	size_t pos = 0;
 	balp->chars = data;
 	if (expected_len > len) {
 		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,
@@ -775,8 +820,8 @@ static CironError parse_fixed_len(CironContext context,
 }
 
 static CironError parse_max_len(CironContext context, const unsigned char *data,
-		int len, int max_len, struct const_chars_and_len *balp) {
-	int pos = 0;
+		size_t len, size_t max_len, struct const_chars_and_len *balp) {
+	size_t pos = 0;
 	balp->chars = data;
 	if (max_len > len) {
 		return ciron_set_error(context, __FILE__, __LINE__, NO_CRYPTO_ERROR,

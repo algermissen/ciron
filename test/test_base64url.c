@@ -25,7 +25,7 @@ struct CironContext context;
 int test_base64url_encodes_correctly() {
 
 	unsigned char chars[256];
-	int len;
+	size_t len;
 
 	unsigned char b1[] = { 0x66 }; /* "f" */
 	unsigned char b2[] = { 0x66, 0x6f }; /* "fo" */
@@ -82,7 +82,7 @@ int test_base64url_encodes_correctly() {
 int test_base64url_decodes_correctly() {
 
 	unsigned char bytes[256];
-	int len;
+	size_t len;
 
 	unsigned char b1[] = { 0x66 }; /* "f" */
 	unsigned char b2[] = { 0x66, 0x6f }; /* "fo" */
@@ -95,7 +95,6 @@ int test_base64url_decodes_correctly() {
 
 	ciron_base64url_decode(&context,(unsigned char*)"", 0, bytes, &len);
 	EXPECT_TRUE(len == 0);
-
 	ciron_base64url_decode(&context,(unsigned char*)"Zg", 2, bytes, &len);
 	EXPECT_TRUE(len == 1);
 	EXPECT_BYTE_EQUAL(b1, bytes, 1);
